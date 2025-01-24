@@ -1,0 +1,95 @@
+/* The container remains static */
+.image-container {
+    width: 450px;
+    height: 500px;
+    position: relative;
+    margin: 20px;
+    overflow: hidden; /* Prevent overflow during zoom/rotation */
+    z-index: 20;
+  }
+  
+  /* The background image div */
+  .image-background {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    transition: transform 8s ease; /* Smooth zoom and rotation */
+    transform-origin: center; /* Center of the image for rotation */
+  }
+  
+  /* Hover effect: only the background image zooms in and rotates */
+  .image-container:hover .image-background {
+    transform: scale(1.5) rotate(10deg); /* Zoom in and rotate */
+  }
+  
+  /* The overlay with a slight blue fade */
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 255, 0.2); /* Slight blue with transparency */
+    z-index: 15; /* Ensure the overlay is above the image but below the content */
+    transition: background 0.3s ease; /* Smooth transition for overlay */
+  }
+  
+  /* The content remains completely static */
+  .content {
+    position: absolute; /* Keeps the content in place */
+    bottom: 0;
+    left: 20px;
+    right: 20px; /* Adjusted for padding */
+    padding: 16px;
+    color: white;
+    z-index: 20; /* Ensure the content stays above the image */
+  }
+  
+  /* Styling for headings and paragraphs */
+  h3 {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+  
+  p {
+    font-size: 1rem;
+  }
+  .scrollbar-hide {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer and Edge */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
+  @font-face {
+    font-family: 'Productname';
+    src: url('/fonts/Jomolhari-alpha3c-0605331.ttf') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+  .productname{
+    font-family: 'Productname';
+  }
+
+  @font-face {
+    font-family: 'cart';
+    src: url('/fonts/NotoSansCJK-VF.ttc') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+  .productname{
+    font-family: 'cart';
+  }
+  /* Additional styles for the mobile menu */
+.menu-container {
+  position: relative;
+}
+
+.menu-container .bg-white {
+  position: absolute;
+  top: 100%; /* Position below the button */
+  left: 0;
+  right: 0;
+}

@@ -1,0 +1,52 @@
+@keyframes slideInLeft {
+    0% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideInRight {
+    0% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .animate-slide-in-left {
+    animation: slideInLeft 1s ease-out forwards;
+  }
+  
+  .animate-slide-in-right {
+    animation: slideInRight 1s ease-out forwards;
+  }
+
+  @font-face {
+    font-family: 'CustomFont';
+    src: url('/fonts/NimbusRoman-Bold.t1') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'CustomFontreg';
+    src: url('/fonts/RIT-Rachana-Bold.otf') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  /* Now, you can use it in your styles */
+  .maintext{
+    font-family: 'CustomFont', sans-serif;
+  }
+  .regtext{
+    font-family: 'CustomFontreg', sans-serif;
+    color: #e0d6cd;
+  }
+  

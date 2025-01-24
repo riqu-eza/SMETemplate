@@ -1,0 +1,16 @@
+.hover-button {
+    perspective: 1000px; /* For 3D effect */
+  }
+  
+  .hover-button span {
+    backface-visibility: hidden; /* Hide the back face during the flip */
+  }
+  
+  .hover-button:hover span:nth-child(1) {
+    transform: rotateY(180deg); /* Flip the text */
+  }
+  
+  .hover-button:hover span:nth-child(2) {
+    transform: rotateY(180deg); /* Flip the icon */
+  }
+  
