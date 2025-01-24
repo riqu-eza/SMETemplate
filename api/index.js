@@ -45,8 +45,8 @@ app.use(cookieParser());
 const server = createServer(app);
 initSocket(server); // Initialize Socket.IO with the server
 
-server.listen(3003, () => {
-  console.log("Server is running on port 3003");
+server.listen(3011, () => {
+  console.log("Server is running on port 3011");
 });
 
 app.use("/api/listing", listingRouter);
