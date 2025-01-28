@@ -1,4 +1,6 @@
 /* eslint-disable react/prop-types */
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   FiFacebook,
   FiInstagram,
@@ -7,6 +9,7 @@ import {
   FiSmartphone,
   FiTwitter,
 } from "react-icons/fi";
+
 import {
   FaPaypal,
   FaStripe,
@@ -17,20 +20,19 @@ import {
   FaRegCopyright,
 } from "react-icons/fa";
 
-import { Link } from "react-router-dom";
-import { useState } from "react";
-
 const Footer = ({ data }) => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  if (!data) {
-    return <footer>Loading footer data...</footer>;
+
+  if (!data || !data.length) {
+    return (
+      <footer className="bg-sky-100 text-center p-4">
+        Loading footer data...
+      </footer>
+    );
   }
 
-  console.log("data in footer", data);
-
-  const currentShop = data?.[0];
-  console.log("data in currentShop", currentShop);
+  const currentShop = data[0];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,7 +43,7 @@ const Footer = ({ data }) => {
       setMessage("Please enter a valid email address.");
       return;
     }
-    console.log("sent", email);
+
     try {
       const response = await fetch("/api/newsletter/create", {
         method: "POST",
@@ -52,6 +54,7 @@ const Footer = ({ data }) => {
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
+
       const data = await response.json();
       console.log(data);
       setMessage("Thank you for subscribing!");
@@ -60,168 +63,183 @@ const Footer = ({ data }) => {
       setMessage("There was an error subscribing. Please try again.");
     }
   };
+
   return (
-    <footer className="bg-[#252525] text-white p-8">
-      <div className="flex justify-center items-center text-center text-[28px] font-[Poppins]">
-        <Link to="/" className="flex flex-row items-center">
-          <span className="text-white font-medium">{currentShop.name}</span>
+    /**
+     * Main Footer:
+     * - Soft sky-blue gradient background
+     * - Uses neutral/darker text for readability
+     */
+    <footer className="bg-gradient-to-b from-sky-50 to-sky-100 text-sky-900 px-6 py-8 md:px-10 md:py-12">
+      {/* Shop Name / Brand */}
+      <div className="flex justify-center items-center mb-8">
+        <Link to="/" className="text-2xl md:text-3xl font-bold text-sky-700">
+          {currentShop.name}
         </Link>
       </div>
 
-      <div className="container items-start mx-auto flex flex-col m-1 gap-1 top-2 p-1 md:flex-row  justify-between">
+      {/* Footer Content Grid */}
+      <div className="container mx-auto flex flex-col md:flex-row gap-8 md:gap-6">
         {/* Opening Days */}
-        <div className="mb-6 md:mb-0 flex-1 p-2">
-          <h3 className="text-lg text-center p-1  font-[Poppins]  text-[#dbb264] font-bold">
+        <div className="flex-1">
+          <h3 className="text-xl font-semibold text-sky-700 text-center mb-3">
             Opening Days
           </h3>
-          <ul className="pl-5  border-2  text-[#697586] font-[Montserrat] mt-2  ">
-            <li className="grid grid-cols-2 gap-4">
-              <span>Monday</span> <span>9 AM - 5 PM</span>
+          <ul className="border border-sky-200 rounded-md p-3 space-y-2 text-sm md:text-base">
+            <li className="grid grid-cols-2">
+              <span>Monday:</span> <span>9 AM - 5 PM</span>
             </li>
-            <li className="grid grid-cols-2 gap-4">
-              <span>Tuesday</span> <span>9 AM - 5 PM</span>
+            <li className="grid grid-cols-2">
+              <span>Tuesday:</span> <span>9 AM - 5 PM</span>
             </li>
-            <li className="grid grid-cols-2 gap-4">
-              <span>Wednesday</span> <span>9 AM - 5 PM</span>
+            <li className="grid grid-cols-2">
+              <span>Wednesday:</span> <span>9 AM - 5 PM</span>
             </li>
-            <li className="grid grid-cols-2 gap-4">
-              <span>Thursday</span> <span>9 AM - 5 PM</span>
+            <li className="grid grid-cols-2">
+              <span>Thursday:</span> <span>9 AM - 5 PM</span>
             </li>
-            <li className="grid grid-cols-2 gap-4">
-              <span>Friday</span> <span>9 AM - 5 PM</span>
+            <li className="grid grid-cols-2">
+              <span>Friday:</span> <span>9 AM - 5 PM</span>
             </li>
-            <li className="grid grid-cols-2 gap-4">
-              <span>Saturday</span> <span>10 AM - 4 PM</span>
+            <li className="grid grid-cols-2">
+              <span>Saturday:</span> <span>10 AM - 4 PM</span>
             </li>
-            <li className="grid grid-cols-2 gap-4">
-              <span>Sunday</span> <span>Closed</span>
+            <li className="grid grid-cols-2">
+              <span>Sunday:</span> <span>Closed</span>
             </li>
-            <li className="grid grid-cols-2 gap-4">
-              <span>Holidays</span> <span>Closed</span>
+            <li className="grid grid-cols-2">
+              <span>Holidays:</span> <span>Closed</span>
             </li>
           </ul>
         </div>
 
         {/* Company Policy */}
-        <div className="mb-6 md:mb-0  flex-1 p-2">
-          <h3 className="text-lg text-center font-[Poppins] text-[#dbb264] p-1 font-bold">
+        <div className="flex-1">
+          <h3 className="text-xl font-semibold text-sky-700 text-center mb-3">
             Company Policy
           </h3>
-          <p className="mt-2 text-[#697586] font-[Montserrat]  ">
-            Go Green by providing organic products that are clean and made of
-            nature with skin nourishing ingridients.
+          <p className="text-sm md:text-base leading-relaxed mb-2">
+            Go Green by providing organic products that are clean and derived
+            from nature with skin-nourishing ingredients.
           </p>
-          <p className="mt-2 text-[#697586] font-[Montserrat] ">
-            Go Green by providing organic products that are clean and made of
-            nature with skin nourishing ingridients.
+          <p className="text-sm md:text-base leading-relaxed">
+            We are committed to sustainability and strive to bring the best
+            eco-friendly options for our valued customers.
           </p>
         </div>
 
         {/* Newsletter Subscription */}
-        <div className="mb-6 md:mb-0  flex-1 p-2">
-          <h3 className="text-lg text-center font-[Poppins] text-[#dbb264] p-1 font-bold">
-            {" "}
+        <div className="flex-1">
+          <h3 className="text-xl font-semibold text-sky-700 text-center mb-3">
             Newsletter
           </h3>
-          <form
-            className="flex p-1 flex-col gap-6 mt-2"
-            onSubmit={handleSubmit}
-          >
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <input
               type="email"
               value={email}
+              required
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Your email address"
-              className="p-2 rounded-md mb-2 border border-gray-300 bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500" // Added focus styles
-              required
+              className="p-2 rounded-md border border-sky-300 bg-white text-sky-700 placeholder-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400 transition"
             />
 
             <button
               type="submit"
-              className="bg-[#a67e5a] hover:bg-gray-200 text-black text-2xl py-2 rounded-md"
+              className="bg-sky-600 hover:bg-sky-700 text-white font-semibold text-base py-2 rounded-md transition-colors"
             >
               Subscribe
             </button>
-            {message && <p className="mt-2 text-sm text-red-600">{message}</p>}
+            {message && (
+              <p className="text-sm text-red-600" aria-live="polite">
+                {message}
+              </p>
+            )}
           </form>
         </div>
 
         {/* Contact Information */}
-        <div className="mb-6 md:mb-0 flex-1 p-2">
-          <h3 className="text-lg    text-center p-1 font-[Poppins] text-[#dbb264] font-bold">
+        <div className="flex-1">
+          <h3 className="text-xl font-semibold text-sky-700 text-center mb-3">
             Contact Us
           </h3>
-          <div className="mt-2 flex flex-col gap-4  p-4">
+          <div className="space-y-4 text-sm md:text-base">
+            {/* Address */}
             <p className="flex items-center">
-              <FiMapPin className="mr-2  text-[#697586] font-[Montserrat]" />{" "}
-              <div>
-                {currentShop?.location?.address &&
-                currentShop?.location?.mapurl?.[0] ? (
-                  <a
-                    href={currentShop.location.mapurl[0]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    {currentShop.location.address}
-                  </a>
-                ) : (
-                  <p>Location not available</p>
-                )}
-              </div>
+              <FiMapPin className="mr-2 text-sky-600" />
+              {currentShop?.location?.address &&
+              currentShop?.location?.mapurl?.[0] ? (
+                <a
+                  href={currentShop.location.mapurl[0]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-sky-600 hover:text-sky-500"
+                >
+                  {currentShop.location.address}
+                </a>
+              ) : (
+                <span>Location not available</span>
+              )}
             </p>
+            {/* Phone */}
             <p className="flex items-center">
-              <FiSmartphone className="mr-2  text-[#697586] font-[Montserrat]" />{" "}
-              Phone: {currentShop.contact.phoneno}
+              <FiSmartphone className="mr-2 text-sky-600" />
+              <span>Phone: {currentShop.contact.phoneno}</span>
             </p>
+            {/* Email */}
             <p className="flex items-center">
-              <FiMail className="mr-2 text-[#697586] font-[Montserrat]" />
+              <FiMail className="mr-2 text-sky-600" />
               <a
-                href="mailto:info@Lskinessentials.com"
-                className="text-[#697586] font-[Montserrat]"
+                href={`mailto:${currentShop.contact.email}`}
+                className="text-sky-600 hover:underline"
               >
-                Email: {currentShop.contact.email}
+                {currentShop.contact.email}
               </a>
             </p>
-          </div>{" "}
-          <div className="flex justify-center mt-6">
-            <Link to="#" className="mx-2">
+          </div>
+
+          {/* Social Media Links */}
+          <div className="flex justify-center mt-6 space-x-6">
+            <Link to="#" className="hover:text-sky-600">
               <FiFacebook className="h-6 w-6 text-blue-600" />
             </Link>
-            <Link to="#" className="mx-2">
+            <Link to="#" className="hover:text-sky-600">
               <FiTwitter className="h-6 w-6 text-blue-400" />
             </Link>
-            <Link to="#" className="mx-2">
+            <Link to="#" className="hover:text-sky-600">
               <FiInstagram className="h-6 w-6 text-pink-500" />
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Social Media Icons */}
-      <div className="flex justify-center mt-6">
-        <Link to="#" className="mx-2">
-          <FaPaypal className="h-6 w-6 text-blue-500" />
+      {/* Payment Icons */}
+      <div className="flex justify-center items-center mt-8 space-x-6">
+        <Link to="#" title="PayPal">
+          <FaPaypal className="h-6 w-6 text-blue-500 hover:scale-105 transition-transform" />
         </Link>
-        <Link to="#" className="mx-2">
-          <FaStripe className="h-6 w-6 text-blue-700" />
+        <Link to="#" title="Stripe">
+          <FaStripe className="h-6 w-6 text-blue-700 hover:scale-105 transition-transform" />
         </Link>
-        <Link to="#" className="mx-2">
-          <FaCcVisa className="h-6 w-6 text-blue-600" />
+        <Link to="#" title="Visa">
+          <FaCcVisa className="h-6 w-6 text-blue-600 hover:scale-105 transition-transform" />
         </Link>
-        <Link to="#" className="mx-2">
-          <FaCcMastercard className="h-6 w-6 text-red-600" />
+        <Link to="#" title="Mastercard">
+          <FaCcMastercard className="h-6 w-6 text-red-600 hover:scale-105 transition-transform" />
         </Link>
-        <Link to="#" className="mx-2">
-          <FaCcAmex className="h-6 w-6 text-blue-500" />
+        <Link to="#" title="American Express">
+          <FaCcAmex className="h-6 w-6 text-blue-500 hover:scale-105 transition-transform" />
         </Link>
-        <Link to="#" className="mx-2">
-          <FaMobileAlt className="h-6 w-6 text-green-500" />
+        <Link to="#" title="Mobile Payment">
+          <FaMobileAlt className="h-6 w-6 text-green-500 hover:scale-105 transition-transform" />
         </Link>
       </div>
-      <div className="flex justify-center mt-6">
-        <p className="text-sm text-gray-500 flex items-center">
-          <FaRegCopyright className="h-3 w-3 mr-1" />
+
+      {/* Copyright */}
+      <div className="flex justify-center mt-8">
+        <p className="text-xs md:text-sm text-gray-500 flex items-center">
+          <span className="mr-1">
+            <FaRegCopyright className="inline-block h-3 w-3" />
+          </span>
           2024 Lskin. All rights reserved. | developed by Kang`ethe Muthunga.
         </p>
       </div>

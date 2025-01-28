@@ -86,31 +86,35 @@ const Home = ({ setFooterData }) => {
       </div>
 
       {/* Navbar for Categories */}
-      <div className="border border-[#2a79f5] p-1 m-1">
-        <div className="bg-[#8b94a3] p-2 border rounded">
-          <nav className="flex space-x-2 md:space-x-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                className={`flex-shrink-0 px-2 py-1 text-[#232629] rounded text-xs md:text-sm ${
+      <div className="p-2 m-2 bg-sky-50 border border-sky-200 rounded-md shadow">
+      {/* Category Filter Bar */}
+      <div className="bg-white p-2 border border-sky-200 rounded">
+        <nav className="flex space-x-2 md:space-x-4 overflow-x-auto scrollbar-thin scrollbar-thumb-sky-300 scrollbar-track-sky-100">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`
+                flex-shrink-0 px-3 py-1 rounded text-xs md:text-sm transition-colors 
+                ${
                   selectedCategory === category.id
-                    ? "bg-[#93b3e6] text-white"
-                    : "bg-[#d1ddf0] hover:bg-[#9eaecc]"
-                }`}
-                onClick={() => setSelectedCategory(category.id)}
-              >
-                {category.name}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Products Listing */}
-        <ProductListing
-          categoryName={selectedCategoryData?.name}
-          products={selectedCategoryData?.products || []}
-        />
+                    ? "bg-sky-400 text-white shadow"
+                    : "bg-sky-100 hover:bg-sky-200 text-sky-700"
+                }
+              `}
+            >
+              {category.name}
+            </button>
+          ))}
+        </nav>
       </div>
+
+      {/* Products Listing */}
+      <ProductListing
+        categoryName={selectedCategoryData?.name}
+        products={selectedCategoryData?.products || []}
+      />
+    </div>
     </>
   );
 };

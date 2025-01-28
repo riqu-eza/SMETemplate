@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import Home from "./pages/Home";
 import Footer from "./components/Footer";
-import ProductListing from "./pages/productListing";
 import Cart from "./pages/purchasing/cart";
 import Checkout from "./pages/purchasing/checkout";
 import CategoryListing from "./pages/CategoryListing";
@@ -23,6 +22,7 @@ import Listtall from "./components/Listall";
 import ShopList from "./admin/Shop";
 import AddProductsPage from "./admin/AddProduct";
 import Header from "./components/header";
+import ProductDetail from "./pages/productListing";
 
 export default function App() {
   const [footerData, setFooterData] = useState(null);
@@ -41,7 +41,7 @@ export default function App() {
               <Route path="/createlisting" element={<ShopList />} />
               <Route
                 path="product/:productId/:userId"
-                element={<ProductListing />}
+                element={<ProductDetail />}
               />
               <Route path="/add-products/:shopId" element={<AddProductsPage />} />
               <Route path="/cart/:productId/:userId" element={<Cart />} />

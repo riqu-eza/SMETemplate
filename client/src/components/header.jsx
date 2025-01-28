@@ -9,13 +9,19 @@ const Header = ({ data }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
-  if (!data) {
-    return <footer>Loading footer data...</footer>;
+  // Show a loading/fallback if no data yet
+  if (!data || !data.length) {
+    return (
+      <header className="bg-sky-600 text-white p-4">
+        Loading shop data...
+      </header>
+    );
   }
 
   // Access the first shop in the array
   const currentShop = data[0];
 
+  // Handle search action
   const handleSearch = () => {
     if (searchQuery.trim()) {
       navigate(`/search?query=${searchQuery}`);
@@ -23,67 +29,75 @@ const Header = ({ data }) => {
   };
 
   return (
-    <header className="bg-[#232629] text-[#b2b8c2] flex flex-col md:flex-row items-start md:items-center justify-between p-2">
-      {/* Left Section: Brand Name */}
+    <header className="bg-sky-500 text-white flex flex-col md:flex-row items-start md:items-center justify-between py-3 px-4 md:px-10 shadow-md">
+      {/* Left Section: Shop Name */}
       <div className="mb-2 md:mb-0">
-        <Link to="/" className="text-2xl font-bold pl-2 md:pl-10">
+        <Link to="/" className="text-xl md:text-2xl font-bold hover:text-sky-100 transition-colors">
           {currentShop?.name || "Default Shop Name"}
         </Link>
       </div>
 
       {/* Middle Section: Location (if available) */}
-      <div className="mb-2 md:mb-0 md:flex-grow text-sm md:text-base flex flex-col items-start">
+      <div className="md:flex-grow md:text-center text-sm md:text-base mb-2 md:mb-0">
         {currentShop?.location?.address && currentShop?.location?.mapurl?.[0] ? (
           <a
             href={currentShop.location.mapurl[0]}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-500 hover:underline"
+            className="underline text-sky-200 hover:text-sky-100 transition-colors"
           >
             {currentShop.location.address}
           </a>
         ) : (
-          <p>Location not available</p>
+          <p className="text-sky-100">Location not available</p>
         )}
       </div>
 
       {/* Right Section: Search, Cart, Profile */}
-      <div className="flex items-center gap-4 md:gap-8 text-base pr-2 md:pr-10">
+      <div className="flex items-center gap-4 md:gap-6">
         {/* Search */}
         <div className="relative">
           {isInputVisible ? (
-            <div className="flex items-center border border-gray-300 rounded-md p-1 bg-white shadow-lg">
+            <div className="flex items-center border border-sky-300 rounded-md bg-white shadow-md">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="border-none outline-none w-32 md:w-52 text-black"
+                className="border-none outline-none w-32 md:w-52 p-1 text-black placeholder-gray-400"
                 placeholder="Search..."
               />
               <button
                 onClick={handleSearch}
-                className="ml-1 p-2 text-gray-500 hover:text-gray-800"
+                className="px-2 py-1 text-gray-600 hover:text-gray-800 transition-colors"
               >
                 <FiSearch size={20} />
               </button>
             </div>
           ) : (
-            <span
-              className="cursor-pointer hover:underline"
+            <button
               onClick={() => setIsInputVisible(true)}
+              className="hover:text-sky-300 transition-colors"
             >
-              Search
-            </span>
+              <FiSearch size={20} />
+            </button>
           )}
         </div>
 
         {/* Cart */}
-        <Link to="/cart" className="relative text-xl md:text-3xl">
+        <Link
+          to="/cart"
+          className="relative text-xl hover:text-sky-300 transition-colors"
+          title="View Cart"
+        >
           <FiShoppingCart />
         </Link>
 
         {/* Profile */}
-        <Link to="/login" className="hover:underline">
+        <Link
+          to="/login"
+          className="hover:text-sky-300 transition-colors"
+          title="Profile / Login"
+        >
           Profile
         </Link>
       </div>
