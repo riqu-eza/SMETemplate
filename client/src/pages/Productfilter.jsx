@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import ProductCard from "../components/product.jsx";
 
-const ProductListing = ({ categoryName, products, userId }) => {
+const Productfilter = ({ categoryName, products, userId }) => {
   const [isSmallScreen, setIsSmallScreen] = useState(() => window.innerWidth < 768);
 
   useEffect(() => {
@@ -133,4 +133,4 @@ const ProductListing = ({ categoryName, products, userId }) => {
   );
 };
 
-export default ProductListing;
+export default Productfilter;

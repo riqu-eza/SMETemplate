@@ -11,6 +11,7 @@ import {
   getShop,
   updateCategory,
   updateItem,
+  updateShop,
 } from "../controllers/Shop.controller.js";
 
 const router = express.Router();
@@ -18,6 +19,7 @@ const router = express.Router();
 router.post("/product/create", createproduct);
 router.post("/shop/create", createShop);
 router.get("/shop/getall", getShop);
+router.put("/shop/:shopId", updateShop);
 router.post("/category/create", addCategoryToShop);
 router.post("/producttype/create");
 router.get("/shop/:shopId/categories", fetchCategoriesForShop);

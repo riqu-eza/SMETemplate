@@ -42,6 +42,26 @@ export const getShop = async (req, res, next) => {
     next(err); // Pass the error to the error-handling middleware
   }
 };
+
+export const updateShop = async (req, res) => {
+  const { shopId } = req.params;
+  const updateData = req.body;
+
+  try {
+    const updatedShop = await Shop.findByIdAndUpdate(shopId, updateData, {
+      new: true, // Return the updated document
+      runValidators: true, // Validate before updating
+    });
+
+    if (!updatedShop) {
+      return res.status(404).json({ error: "Shop not found" });
+    }
+
+    res.status(200).json(updatedShop);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
 export const addCategoryToShop = async (req, res) => {
   const { shopId, categoryData } = req.body;
 
