@@ -12,15 +12,10 @@ const Home = ({ setFooterData }) => {
   const [selectedCategory, setSelectedCategory] = useState(null); // Selected category ID
   // eslint-disable-next-line no-unused-vars
   const { currentUser } = useUser();
-  const imageUrl1 = "/home.jpeg"; // Replace with your actual image path
-  const imageUrl2 = "/home.jpeg"; // Replace with your actual image path
 
-  // Sample Promotion Images (Replace with your actual promotion image URLs)
-  const promotionImages = [
-    "/home.jpeg",
-    "/home.jpeg",
-    "/home.jpeg",
-  ];
+  const [imageUrl1, setImageUrl1] = useState(""); 
+  const [imageUrl2, setImageUrl2] = useState("");
+  const [promotionImages, setPromotionImages] = useState([]);
 
   const fetchData = async () => {
     try {
@@ -29,8 +24,20 @@ const Home = ({ setFooterData }) => {
         throw new Error(`Error: ${response.status}`);
       }
       const data = await response.json();
-      console.log(data);
+      console.log("Fetched Data:", data);
       setFooterData(data);
+
+      if (data.length > 0) {
+        const firstShop = data[0]; // Assuming you are using the first shop for images
+        
+        // Assign image URLs if available
+        setImageUrl1(firstShop.imageUrls?.[0] || "/default-image1.jpg"); 
+        setImageUrl2(firstShop.imageUrls?.[1] || "/default-image2.jpg");
+
+        // Assign promotional images
+        setPromotionImages(firstShop.promotionalimages || []);
+      }
+
       // Extract categories and their products
       const extractedCategories = data.flatMap((shop) =>
         shop.categories.map((category) => ({

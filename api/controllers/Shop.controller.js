@@ -24,6 +24,7 @@ export const fetchCategoriesForShop = async (req, res, next) => {
 
 
 export const createShop = async (req, res) => {
+  console.log(req.body)
   try {
     const shop = new Shop(req.body);
     await shop.save();

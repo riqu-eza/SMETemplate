@@ -33,12 +33,12 @@ const Footer = ({ data }) => {
   }
 
   const currentShop = data[0];
+  console.log("Footer Data:", currentShop);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Simple email validation
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!emailPattern.test(email)) {
       setMessage("Please enter a valid email address.");
       return;
@@ -48,83 +48,59 @@ const Footer = ({ data }) => {
       const response = await fetch("/api/newsletter/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(email),
+        body: JSON.stringify({ email }),
       });
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log(data);
       setMessage("Thank you for subscribing!");
-      setEmail(""); // Clear the input
+      setEmail(""); // Clear input
     } catch (error) {
       setMessage("There was an error subscribing. Please try again.");
     }
   };
 
   return (
-    /**
-     * Main Footer:
-     * - Soft sky-blue gradient background
-     * - Uses neutral/darker text for readability
-     */
     <footer className="bg-gradient-to-b from-sky-50 to-sky-100 text-sky-900 px-6 py-8 md:px-10 md:py-12">
-      {/* Shop Name / Brand */}
+      {/* Shop Name */}
       <div className="flex justify-center items-center mb-8">
         <Link to="/" className="text-2xl md:text-3xl font-bold text-sky-700">
           {currentShop.name}
         </Link>
       </div>
 
-      {/* Footer Content Grid */}
+      {/* Footer Content */}
       <div className="container mx-auto flex flex-col md:flex-row gap-8 md:gap-6">
-        {/* Opening Days */}
+        {/* Opening Days (Dynamic) */}
         <div className="flex-1">
           <h3 className="text-xl font-semibold text-sky-700 text-center mb-3">
             Opening Days
           </h3>
           <ul className="border border-sky-200 rounded-md p-3 space-y-2 text-sm md:text-base">
-            <li className="grid grid-cols-2">
-              <span>Monday:</span> <span>9 AM - 5 PM</span>
-            </li>
-            <li className="grid grid-cols-2">
-              <span>Tuesday:</span> <span>9 AM - 5 PM</span>
-            </li>
-            <li className="grid grid-cols-2">
-              <span>Wednesday:</span> <span>9 AM - 5 PM</span>
-            </li>
-            <li className="grid grid-cols-2">
-              <span>Thursday:</span> <span>9 AM - 5 PM</span>
-            </li>
-            <li className="grid grid-cols-2">
-              <span>Friday:</span> <span>9 AM - 5 PM</span>
-            </li>
-            <li className="grid grid-cols-2">
-              <span>Saturday:</span> <span>10 AM - 4 PM</span>
-            </li>
-            <li className="grid grid-cols-2">
-              <span>Sunday:</span> <span>Closed</span>
-            </li>
-            <li className="grid grid-cols-2">
-              <span>Holidays:</span> <span>Closed</span>
-            </li>
+            {currentShop.operationperiods
+              ? Object.entries(currentShop.operationperiods).map(
+                  ([day, hours]) => (
+                    <li key={day} className="grid grid-cols-2">
+                      <span className="capitalize">{day}:</span>
+                      <span>
+                        {hours.open} - {hours.close}
+                      </span>
+                    </li>
+                  )
+                )
+              : "No operation periods available"}
           </ul>
         </div>
 
-        {/* Company Policy */}
+        {/* Company Policy (Dynamic) */}
         <div className="flex-1">
           <h3 className="text-xl font-semibold text-sky-700 text-center mb-3">
             Company Policy
           </h3>
-          <p className="text-sm md:text-base leading-relaxed mb-2">
-            Go Green by providing organic products that are clean and derived
-            from nature with skin-nourishing ingredients.
-          </p>
           <p className="text-sm md:text-base leading-relaxed">
-            We are committed to sustainability and strive to bring the best
-            eco-friendly options for our valued customers.
+            {currentShop.companypolicy || "No policy available."}
           </p>
         </div>
 
@@ -197,50 +173,46 @@ const Footer = ({ data }) => {
             </p>
           </div>
 
-          {/* Social Media Links */}
+          {/* Social Media Links (Dynamic) */}
           <div className="flex justify-center mt-6 space-x-6">
-            <Link to="#" className="hover:text-sky-600">
-              <FiFacebook className="h-6 w-6 text-blue-600" />
-            </Link>
-            <Link to="#" className="hover:text-sky-600">
-              <FiTwitter className="h-6 w-6 text-blue-400" />
-            </Link>
-            <Link to="#" className="hover:text-sky-600">
-              <FiInstagram className="h-6 w-6 text-pink-500" />
-            </Link>
+            {currentShop.socialmedialinks?.map((link, index) => {
+              let Icon;
+              if (link.includes("facebook")) Icon = FiFacebook;
+              else if (link.includes("twitter")) Icon = FiTwitter;
+              else if (link.includes("instagram")) Icon = FiInstagram;
+              else return null; // Ignore if no matching icon
+
+              return (
+                <a
+                  key={index}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-sky-600"
+                >
+                  <Icon className="h-6 w-6" />
+                </a>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Payment Icons */}
       <div className="flex justify-center items-center mt-8 space-x-6">
-        <Link to="#" title="PayPal">
-          <FaPaypal className="h-6 w-6 text-blue-500 hover:scale-105 transition-transform" />
-        </Link>
-        <Link to="#" title="Stripe">
-          <FaStripe className="h-6 w-6 text-blue-700 hover:scale-105 transition-transform" />
-        </Link>
-        <Link to="#" title="Visa">
-          <FaCcVisa className="h-6 w-6 text-blue-600 hover:scale-105 transition-transform" />
-        </Link>
-        <Link to="#" title="Mastercard">
-          <FaCcMastercard className="h-6 w-6 text-red-600 hover:scale-105 transition-transform" />
-        </Link>
-        <Link to="#" title="American Express">
-          <FaCcAmex className="h-6 w-6 text-blue-500 hover:scale-105 transition-transform" />
-        </Link>
-        <Link to="#" title="Mobile Payment">
-          <FaMobileAlt className="h-6 w-6 text-green-500 hover:scale-105 transition-transform" />
-        </Link>
+        <FaPaypal className="h-6 w-6 text-blue-500" />
+        <FaStripe className="h-6 w-6 text-blue-700" />
+        <FaCcVisa className="h-6 w-6 text-blue-600" />
+        <FaCcMastercard className="h-6 w-6 text-red-600" />
+        <FaCcAmex className="h-6 w-6 text-blue-500" />
+        <FaMobileAlt className="h-6 w-6 text-green-500" />
       </div>
 
       {/* Copyright */}
       <div className="flex justify-center mt-8">
         <p className="text-xs md:text-sm text-gray-500 flex items-center">
-          <span className="mr-1">
-            <FaRegCopyright className="inline-block h-3 w-3" />
-          </span>
-          2024 Lskin. All rights reserved. | developed by Kang`ethe Muthunga.
+          <FaRegCopyright className="inline-block h-3 w-3 mr-1" />
+          2025 SME Sale Point. All rights reserved. Developed by Dancah Technology
         </p>
       </div>
     </footer>

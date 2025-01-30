@@ -9,6 +9,7 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+import EditShop from "./Editshop";
 
 const ShopList = () => {
   const [shops, setShops] = useState([]);
@@ -25,35 +26,23 @@ const ShopList = () => {
       mapurl: [],
     },
     imageUrls: [],
+    promotionalimages: [],
+    companypolicy: "",
+    operationperiods: "",
+    socialmedialinks: [],
+    payonorder: true,
   });
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
-  const [files, setFiles] = useState([]);
-
   const [uploading, setUploading] = useState(false);
   const [imageUploadError, setImageUploadError] = useState(false);
-  const [message, setMessage] = useState("");
+  const [promoUploading, setPromoUploading] = useState(false);
+  const [promoUploadError, setPromoUploadError] = useState(false);
+  const [error, setError] = useState(null);
+  const [editingShop, setEditingShop] = useState(null);
+  const navigate = useNavigate();
+  const [files, setFiles] = useState([]);
+  const [promoFiles, setPromoFiles] = useState([]);
 
-  // State for editing shops
-  const [editingShopId, setEditingShopId] = useState(null);
-  const [editShopData, setEditShopData] = useState({
-    name: "",
-    owner: "",
-    owneremail: "",
-    contact: {
-      email: "",
-      phoneno: "",
-    },
-    location: {
-      address: "",
-      mapurl: [],
-    },
-    imageUrls: [],
-  });
-  const [editFiles, setEditFiles] = useState([]);
-  const [editUploading, setEditUploading] = useState(false);
-  const [editImageUploadError, setEditImageUploadError] = useState(false);
-  const [editMessage, setEditMessage] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchShops = async () => {
@@ -78,8 +67,8 @@ const ShopList = () => {
 
   // Handle form input changes for creating a new shop
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    // Handle nested state for contact and location
+    const { name, value, type, checked } = e.target;
+
     if (name.startsWith("contact.")) {
       const field = name.split(".")[1];
       setNewShop((prev) => ({
@@ -92,6 +81,20 @@ const ShopList = () => {
         ...prev,
         location: { ...prev.location, [field]: value },
       }));
+    } else if (name.startsWith("operationperiods.")) {
+      const [_, day, period] = name.split(".");
+      setNewShop((prev) => ({
+        ...prev,
+        operationperiods: {
+          ...prev.operationperiods,
+          [day]: {
+            ...prev.operationperiods[day],
+            [period]: value,
+          },
+        },
+      }));
+    } else if (type === "checkbox") {
+      setNewShop((prev) => ({ ...prev, [name]: checked }));
     } else {
       setNewShop((prev) => ({ ...prev, [name]: value }));
     }
@@ -101,6 +104,7 @@ const ShopList = () => {
   const handleCreateShop = async (e) => {
     e.preventDefault();
     try {
+      console.log(newShop);
       const response = await fetch("/api/property/shop/create", {
         method: "POST",
         headers: {
@@ -128,62 +132,59 @@ const ShopList = () => {
       setError("Failed to create shop. Please try again.");
     }
   };
+  const handleImageSubmit = async (type) => {
+    let selectedFiles = type === "images" ? files : promoFiles;
+    let setUploadingState =
+      type === "images" ? setUploading : setPromoUploading;
+    let setErrorState =
+      type === "images" ? setImageUploadError : setPromoUploadError;
+    let updateField = type === "images" ? "imageUrls" : "promotionalimages";
 
-  // Handle image upload (both for create and edit)
-  const handleImageUpload = async (files, setImageState) => {
-    if (files.length === 0) {
-      setImageUploadError("Select images to upload.");
-      return;
-    }
+    if (
+      selectedFiles.length > 0 &&
+      selectedFiles.length + newShop[updateField].length < 7
+    ) {
+      setUploadingState(true);
+      setErrorState(false);
+      const promises = [];
 
-    const maxImages = 6;
-    if (files.length + setImageState.imageUrls.length > maxImages) {
-      setImageUploadError(`You can only upload up to ${maxImages} images.`);
-      return;
-    }
+      for (let i = 0; i < selectedFiles.length; i++) {
+        promises.push(storeImage(selectedFiles[i]));
+      }
 
-    setUploading(true);
-    setImageUploadError(false);
-
-    try {
-      const uploadPromises = files.map((file) => storeImage(file));
-      const urls = await Promise.all(uploadPromises);
-      setImageState((prev) => ({
-        ...prev,
-        imageUrls: [...prev.imageUrls, ...urls],
-      }));
-      setUploading(false);
-    } catch (err) {
-      console.error("Image upload error:", err);
-      setImageUploadError("Image upload failed. Please try again.");
-      setUploading(false);
+      Promise.all(promises)
+        .then((urls) => {
+          setNewShop((prev) => ({
+            ...prev,
+            [updateField]: [...prev[updateField], ...urls],
+          }));
+          setErrorState(false);
+          setUploadingState(false);
+        })
+        .catch(() => {
+          setErrorState("Image upload failed (2MB max per image)");
+          setUploadingState(false);
+        });
+    } else if (selectedFiles.length === 0) {
+      setErrorState("Select images to upload");
+      setUploadingState(false);
+    } else {
+      setErrorState("You can only upload 6 images per category");
+      setUploadingState(false);
     }
   };
-
-  // Handle image upload for creating a new shop
-  const handleImageSubmit = () => {
-    handleImageUpload(files, setNewShop);
-    setFiles([]); // Clear selected files after upload
-  };
-
-  // Handle image upload for editing a shop
-  const handleEditImageSubmit = () => {
-    handleImageUpload(editFiles, setEditShopData);
-    setEditFiles([]); // Clear selected files after upload
-  };
-
   const storeImage = async (file) => {
     return new Promise((resolve, reject) => {
       const storage = getStorage(app);
-      const fileName = new Date().getTime() + "_" + file.name;
-      const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
+      const fileName = new Date().getTime() + file.name;
+      const storageref = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageref, file);
       uploadTask.on(
         "state_changed",
         (snapshot) => {
           const progress =
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log(`The progress is ${progress}% done`);
+          console.log(`Upload is ${progress}% done`);
         },
         (error) => {
           reject(error);
@@ -196,110 +197,22 @@ const ShopList = () => {
       );
     });
   };
-
-  // Handle image removal for creating a new shop
-  const handleRemoveImage = (index) => {
+  const handleRemoveImage = (type, index) => {
     setNewShop((prev) => ({
       ...prev,
-      imageUrls: prev.imageUrls.filter((_, i) => i !== index),
+      [type]: prev[type].filter((_, i) => i !== index),
     }));
   };
-
-  // Handle image removal for editing a shop
-  const handleEditRemoveImage = (index) => {
-    setEditShopData((prev) => ({
-      ...prev,
-      imageUrls: prev.imageUrls.filter((_, i) => i !== index),
-    }));
+  const handleEditShop = (shop) => {
+    setEditingShop(shop);
   };
-
-  // Handle initiating edit
-  const initiateEdit = (shop) => {
-    setEditingShopId(shop._id);
-    setEditShopData({
-      name: shop.name,
-      owner: shop.owner,
-      owneremail: shop.owneremail,
-      contact: { ...shop.contact },
-      location: { ...shop.location },
-      imageUrls: [...shop.imageUrls],
-    });
-    setEditMessage("");
-    setEditFiles([]);
+  const handleUpdateShop = (updatedShop) => {
+    setShops((prevShops) =>
+      prevShops.map((shop) => (shop._id === updatedShop._id ? updatedShop : shop))
+    );
+    setEditingShop(null);
+    setMessage("Shop updated successfully!");
   };
-
-  // Handle cancelling edit
-  const cancelEdit = () => {
-    setEditingShopId(null);
-    setEditShopData({
-      name: "",
-      owner: "",
-      owneremail: "",
-      contact: { email: "", phoneno: "" },
-      location: { address: "", mapurl: [] },
-      imageUrls: [],
-    });
-    setEditFiles([]);
-    setEditMessage("");
-  };
-
-  // Handle form input changes for editing a shop
-  const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
-    if (name.startsWith("contact.")) {
-      const field = name.split(".")[1];
-      setEditShopData((prev) => ({
-        ...prev,
-        contact: { ...prev.contact, [field]: value },
-      }));
-    } else if (name.startsWith("location.")) {
-      const field = name.split(".")[1];
-      setEditShopData((prev) => ({
-        ...prev,
-        location: { ...prev.location, [field]: value },
-      }));
-    } else {
-      setEditShopData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  // Handle submitting edit
-  const handleUpdateShop = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`/api/property/shop/${editingShopId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editShopData),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const updatedShop = await response.json();
-      setShops((prevShops) =>
-        prevShops.map((shop) =>
-          shop._id === updatedShop._id ? updatedShop : shop
-        )
-      );
-      setEditingShopId(null);
-      setEditShopData({
-        name: "",
-        owner: "",
-        owneremail: "",
-        contact: { email: "", phoneno: "" },
-        location: { address: "", mapurl: [] },
-        imageUrls: [],
-      });
-      setEditFiles([]);
-      setEditMessage("Shop updated successfully!");
-    } catch (err) {
-      console.error("Error updating shop:", err);
-      setEditMessage("Failed to update shop. Please try again.");
-    }
-  };
-
   return (
     <div className="container mx-auto p-6">
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
@@ -331,7 +244,7 @@ const ShopList = () => {
                   <div className="flex space-x-2">
                     {/* Edit Button */}
                     <button
-                      onClick={() => initiateEdit(shop)}
+                      onClick={() => handleEditShop(shop)}
                       className="text-yellow-500 hover:text-yellow-700"
                       title="Edit Shop"
                     >
@@ -350,183 +263,26 @@ const ShopList = () => {
                         />
                       </svg>
                     </button>
-                    {/* Delete Button (Optional) */}
-                    {/* Implement delete functionality if needed */}
                   </div>
                 </li>
               ))}
           </ul>
         </div>
 
-        {/* Create New Shop Section */}
-        <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-lg">
-          <h3 className="text-2xl font-semibold text-gray-700 mb-4">
-            Create a New Shop
-          </h3>
-          <form onSubmit={handleCreateShop} className="space-y-4">
-            {/* Shop Name */}
-            <input
-              type="text"
-              name="name"
-              placeholder="Shop Name"
-              value={newShop.name}
-              onChange={handleInputChange}
-              required
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {/* Owner Name */}
-            <input
-              type="text"
-              name="owner"
-              placeholder="Owner Name"
-              value={newShop.owner}
-              onChange={handleInputChange}
-              required
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {/* Owner Email */}
-            <input
-              type="email"
-              name="owneremail"
-              placeholder="Owner Email"
-              value={newShop.owneremail}
-              onChange={handleInputChange}
-              required
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {/* Contact Email */}
-            <input
-              type="email"
-              name="contact.email"
-              placeholder="Contact Email"
-              value={newShop.contact.email}
-              onChange={handleInputChange}
-              required
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {/* Contact Phone Number */}
-            <input
-              type="tel"
-              name="contact.phoneno"
-              placeholder="Contact Phone Number"
-              value={newShop.contact.phoneno}
-              onChange={handleInputChange}
-              required
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {/* Shop Address */}
-            <input
-              type="text"
-              name="location.address"
-              placeholder="Shop Address"
-              value={newShop.location.address}
-              onChange={handleInputChange}
-              required
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {/* Map URLs */}
-            <input
-              type="text"
-              name="location.mapurl"
-              placeholder="Map URL (comma separated)"
-              value={newShop.location.mapurl.join(", ")} // Joining to input as string
-              onChange={(e) => {
-                const mapUrls = e.target.value
-                  .split(",")
-                  .map((url) => url.trim());
-                setNewShop((prev) => ({
-                  ...prev,
-                  location: { ...prev.location, mapurl: mapUrls },
-                }));
-              }}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {/* Image Upload Section */}
-            <div className="col-span-full">
-              <label className="block text-gray-700 font-bold mb-2">
-                Upload Images (Max 6):
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => setFiles(Array.from(e.target.files))}
-                className="border rounded p-2 w-full"
-              />
-              {imageUploadError && (
-                <p className="text-red-600">{imageUploadError}</p>
-              )}
-              <button
-                type="button"
-                onClick={handleImageSubmit}
-                disabled={uploading}
-                className="mt-2 bg-blue-500 text-white rounded p-2 w-full hover:bg-blue-600 transition-colors"
-              >
-                {uploading ? "Uploading..." : "Upload Images"}
-              </button>
-            </div>
-
-            {/* Display Uploaded Images */}
-            {newShop.imageUrls.length > 0 && (
-              <div className="col-span-full mt-4">
-                <h4 className="text-lg font-semibold">Uploaded Images:</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {newShop.imageUrls.map((url, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={url}
-                        alt={`Uploaded ${index}`}
-                        className="w-full h-32 object-cover rounded"
-                      />
-                      <button
-                        onClick={() => handleRemoveImage(index)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                        title="Remove Image"
-                      >
-                        &times;
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="w-full py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-            >
-              Add Shop
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {/* Edit Shop Modal */}
-      {editingShopId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white w-11/12 md:w-3/4 lg:w-1/2 p-6 rounded-lg shadow-lg overflow-y-auto max-h-full">
+        {/* Conditionally Render Create New Shop Section */}
+        {shops.length === 0 && (
+          <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-lg">
             <h3 className="text-2xl font-semibold text-gray-700 mb-4">
-              Edit Shop
+              Create a New Shop
             </h3>
-            {editMessage && (
-              <p
-                className={`mb-4 text-sm ${
-                  editMessage.includes("successfully")
-                    ? "text-green-500"
-                    : "text-red-500"
-                }`}
-              >
-                {editMessage}
-              </p>
-            )}
-            <form onSubmit={handleUpdateShop} className="space-y-4">
+            <form onSubmit={handleCreateShop} className="space-y-4">
               {/* Shop Name */}
               <input
                 type="text"
                 name="name"
                 placeholder="Shop Name"
-                value={editShopData.name}
-                onChange={handleEditInputChange}
+                value={newShop.name}
+                onChange={handleInputChange}
                 required
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -535,8 +291,8 @@ const ShopList = () => {
                 type="text"
                 name="owner"
                 placeholder="Owner Name"
-                value={editShopData.owner}
-                onChange={handleEditInputChange}
+                value={newShop.owner}
+                onChange={handleInputChange}
                 required
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -545,8 +301,8 @@ const ShopList = () => {
                 type="email"
                 name="owneremail"
                 placeholder="Owner Email"
-                value={editShopData.owneremail}
-                onChange={handleEditInputChange}
+                value={newShop.owneremail}
+                onChange={handleInputChange}
                 required
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -554,9 +310,9 @@ const ShopList = () => {
               <input
                 type="email"
                 name="contact.email"
-                placeholder="Contact Email"
-                value={editShopData.contact.email}
-                onChange={handleEditInputChange}
+                placeholder="Shops Email"
+                value={newShop.contact.email}
+                onChange={handleInputChange}
                 required
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -564,9 +320,9 @@ const ShopList = () => {
               <input
                 type="tel"
                 name="contact.phoneno"
-                placeholder="Contact Phone Number"
-                value={editShopData.contact.phoneno}
-                onChange={handleEditInputChange}
+                placeholder=" Phone Number"
+                value={newShop.contact.phoneno}
+                onChange={handleInputChange}
                 required
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -575,8 +331,8 @@ const ShopList = () => {
                 type="text"
                 name="location.address"
                 placeholder="Shop Address"
-                value={editShopData.location.address}
-                onChange={handleEditInputChange}
+                value={newShop.location.address}
+                onChange={handleInputChange}
                 required
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -585,87 +341,222 @@ const ShopList = () => {
                 type="text"
                 name="location.mapurl"
                 placeholder="Map URL (comma separated)"
-                value={editShopData.location.mapurl.join(", ")} // Joining to input as string
+                value={newShop.location.mapurl.join(", ")}
                 onChange={(e) => {
                   const mapUrls = e.target.value
                     .split(",")
                     .map((url) => url.trim());
-                  setEditShopData((prev) => ({
+                  setNewShop((prev) => ({
                     ...prev,
                     location: { ...prev.location, mapurl: mapUrls },
                   }));
                 }}
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              {/* Image Upload Section */}
-              <div className="col-span-full">
-                <label className="block text-gray-700 font-bold mb-2">
-                  Upload Images (Max 6):
+              {/* Company Policy */}
+              <textarea
+                name="companypolicy"
+                placeholder="Company Policy"
+                value={newShop.companypolicy}
+                onChange={handleInputChange}
+                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {/* Operation Periods */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Operation Periods
+                </label>
+                {[
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                  "Sunday",
+                ].map((day) => (
+                  <div key={day} className="flex items-center space-x-2">
+                    <span className="w-24">{day}</span>
+                    <input
+                      type="time"
+                      name={`operationperiods.${day.toLowerCase()}.open`}
+                      placeholder="Open Time"
+                      value={
+                        newShop.operationperiods[day.toLowerCase()]?.open || ""
+                      }
+                      onChange={(e) => {
+                        const { name, value } = e.target;
+                        const dayName = name.split(".")[1];
+                        setNewShop((prev) => ({
+                          ...prev,
+                          operationperiods: {
+                            ...prev.operationperiods,
+                            [dayName]: {
+                              ...prev.operationperiods[dayName],
+                              open: value,
+                            },
+                          },
+                        }));
+                      }}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="time"
+                      name={`operationperiods.${day.toLowerCase()}.close`}
+                      placeholder="Close Time"
+                      value={
+                        newShop.operationperiods[day.toLowerCase()]?.close || ""
+                      }
+                      onChange={(e) => {
+                        const { name, value } = e.target;
+                        const dayName = name.split(".")[1];
+                        setNewShop((prev) => ({
+                          ...prev,
+                          operationperiods: {
+                            ...prev.operationperiods,
+                            [dayName]: {
+                              ...prev.operationperiods[dayName],
+                              close: value,
+                            },
+                          },
+                        }));
+                      }}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                ))}
+              </div>
+              {/* Social Media Links */}
+              <input
+                type="text"
+                name="socialmedialinks"
+                placeholder="Social Media Links (comma separated)"
+                value={newShop.socialmedialinks.join(", ")}
+                onChange={(e) => {
+                  const links = e.target.value
+                    .split(",")
+                    .map((link) => link.trim());
+                  setNewShop((prev) => ({
+                    ...prev,
+                    socialmedialinks: links,
+                  }));
+                }}
+                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {/* Pay on Order */}
+              <div className="flex items-center space-x-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Pay on Order
                 </label>
                 <input
+                  type="checkbox"
+                  name="payonorder"
+                  checked={newShop.payonorder}
+                  onChange={(e) => {
+                    setNewShop((prev) => ({
+                      ...prev,
+                      payonorder: e.target.checked,
+                    }));
+                  }}
+                  className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <p className="font-semibold">Main Images:</p>
+              <div className="flex gap-4">
+                <input
+                  onChange={(e) => setFiles(e.target.files)}
+                  className="p-3 border border-gray-300 rounded w-full"
                   type="file"
                   accept="image/*"
                   multiple
-                  onChange={(e) => setEditFiles(Array.from(e.target.files))}
-                  className="border rounded p-2 w-full"
                 />
-                {editImageUploadError && (
-                  <p className="text-red-600">{editImageUploadError}</p>
-                )}
                 <button
+                  disabled={uploading}
                   type="button"
-                  onClick={handleEditImageSubmit}
-                  disabled={editUploading}
-                  className="mt-2 bg-blue-500 text-white rounded p-2 w-full hover:bg-blue-600 transition-colors"
+                  onClick={() => handleImageSubmit("images")}
+                  className="p-3 text-green-700 border border-green-700 rounded uppercase hover:shadow-lg disabled:opacity-80"
                 >
-                  {editUploading ? "Uploading..." : "Upload Images"}
+                  {uploading ? "Uploading..." : "Upload"}
                 </button>
               </div>
-
-              {/* Display Uploaded Images */}
-              {editShopData.imageUrls.length > 0 && (
-                <div className="col-span-full mt-4">
-                  <h4 className="text-lg font-semibold">Uploaded Images:</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {editShopData.imageUrls.map((url, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={url}
-                          alt={`Uploaded ${index}`}
-                          className="w-full h-32 object-cover rounded"
-                        />
-                        <button
-                          onClick={() => handleEditRemoveImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                          title="Remove Image"
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+              <p className="text-red-700 text-sm">
+                {imageUploadError && imageUploadError}
+              </p>
+              {newShop.imageUrls.map((url, index) => (
+                <div
+                  key={url}
+                  className="flex justify-between p-3 border items-center"
+                >
+                  <img
+                    src={url}
+                    alt="shop"
+                    className="w-20 h-20 object-contain rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage("imageUrls", index)}
+                    className="p-3 text-red-700 rounded-lg uppercase hover:opacity-75"
+                  >
+                    Delete
+                  </button>
                 </div>
-              )}
+              ))}
 
-              {/* Action Buttons */}
-              <div className="flex justify-between items-center">
+              <p className="font-semibold">Promotional Images:</p>
+              <div className="flex gap-4">
+                <input
+                  onChange={(e) => setPromoFiles(e.target.files)}
+                  className="p-3 border border-gray-300 rounded w-full"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                />
                 <button
-                  type="submit"
-                  className="w-full py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                >
-                  Update Shop
-                </button>
-                <button
+                  disabled={promoUploading}
                   type="button"
-                  onClick={cancelEdit}
-                  className="ml-4 py-3 bg-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-400 focus:outline-none transition-colors"
+                  onClick={() => handleImageSubmit("promotionalimages")}
+                  className="p-3 text-green-700 border border-green-700 rounded uppercase hover:shadow-lg disabled:opacity-80"
                 >
-                  Cancel
+                  {promoUploading ? "Uploading..." : "Upload"}
                 </button>
               </div>
+              <p className="text-red-700 text-sm">
+                {promoUploadError && promoUploadError}
+              </p>
+              {newShop.promotionalimages.map((url, index) => (
+                <div
+                  key={url}
+                  className="flex justify-between p-3 border items-center"
+                >
+                  <img
+                    src={url}
+                    alt="promo"
+                    className="w-20 h-20 object-contain rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleRemoveImage("promotionalimages", index)
+                    }
+                    className="p-3 text-red-700 rounded-lg uppercase hover:opacity-75"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+              <button
+                type="submit"
+                className="w-full py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              >
+                Add Shop
+              </button>
             </form>
           </div>
-        </div>
+        )}
+      </div>
+
+      {editingShop && (
+        <EditShop shop={editingShop} onUpdate={handleUpdateShop} onClose={() => setEditingShop(null)} />
       )}
     </div>
   );

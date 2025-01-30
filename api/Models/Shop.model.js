@@ -2,11 +2,21 @@ import mongoose from "mongoose";
 
 const ShopSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  images: [{ type: String }],
-
+  imageUrls: [{ type: String }],
+  promotionalimages:[{type:String}],
   owner: { type: String, required: true },
   owneremail: { type: String, required: true },
-
+  companypolicy:{ type:String, requires: true},
+  operationperiods: {
+    type: Map,
+    of: {
+      open: { type: String, required: true },
+      close: { type: String, required: true },
+    },
+  },
+  
+  socialmedialinks:[{type:String}],
+  payonorder:{ type: Boolean, default: true },
   categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
   contact: {
     email: { type: String, required: true },

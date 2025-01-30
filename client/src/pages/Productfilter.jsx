@@ -42,7 +42,7 @@ const Productfilter = ({ categoryName, products, userId }) => {
     // Main background with a sky-blue gradient
     <div className="min-h-screen pb-6 bg-gradient-to-b from-sky-50 to-sky-100">
       {/* Page title */}
-      <h1 className="text-2xl font-semibold text-center text-sky-700 py-2">
+      <h1 className="text-base font-semibold text-center text-sky-700 py-2">
         {categoryName} Products
       </h1>
 
@@ -50,7 +50,7 @@ const Productfilter = ({ categoryName, products, userId }) => {
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row bg-white shadow-md rounded-md">
         {/* Filters Section */}
         <div className="md:w-1/4 w-full p-4 border-b md:border-b-0 md:border-r border-sky-200 bg-sky-50">
-          <h3 className="text-lg font-bold text-sky-700 mb-4">Filter by Type</h3>
+          <h3 className="text-xm font-bold text-sky-700 mb-4">Filter by Type</h3>
 
           {/**
            * On small screens: horizontal, scrollable filter list
