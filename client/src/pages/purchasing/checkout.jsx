@@ -17,6 +17,7 @@ const Checkout = () => {
   const [discountCode, setDiscountCode] = useState("");
   const [ordertrackingid, setordertrackingid] = useState("");
   const [email, setEmail] = useState(currentUser ? currentUser.email : "");
+  const [payOnOrder, setPayOnOrder] = useState(true);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -57,7 +58,23 @@ const Checkout = () => {
       setFormData((prev) => ({ ...prev, email: "" }));
     }
   }, [currentUser]);
+useEffect(() => {
+    const fetchStoreSettings = async () => {
+      try {
+        const response = await fetch("/api/listing/getlisting");
+        if (!response.ok) throw new Error("Failed to fetch store settings");
 
+        const storeData = await response.json();
+        if (storeData.length > 0) {
+          setPayOnOrder(storeData[0].payonorder); // Get payonorder value
+        }
+      } catch (error) {
+        console.error("Error fetching store settings:", error);
+      }
+    };
+
+    fetchStoreSettings();
+  }, []);
   useEffect(() => {
     const fetchData = async () => {
       if (productId && userId) {
@@ -183,13 +200,16 @@ const Checkout = () => {
       const createdOrderId = await createOrder();
       if (!createdOrderId) return;
 
-      const paymentSuccess = await processPayment(createdOrderId);
-      if (!paymentSuccess) return;
-
+      if (payOnOrder) {
+        // If payment is required
+        const paymentSuccess = await Pay(createdOrderId);
+        if (!paymentSuccess.success) return;
+      }
       // if (!paymentSuccess) {
       //   setSuccessMessage("Payment initiation failed. Please try again.");
       //   return;
       // }
+      await completeCheckout({ payment_method: "No Payment Required" });
     } catch (error) {
       console.error("An error occurred:", error.message);
     } finally {
@@ -230,6 +250,7 @@ const Checkout = () => {
   };
 
   // Helper function to process the payment
+  // eslint-disable-next-line no-unused-vars
   const processPayment = async (orderId) => {
     setStep("payment");
 

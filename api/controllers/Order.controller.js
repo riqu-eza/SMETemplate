@@ -56,27 +56,45 @@ export const getorder = async (req, res, next) => {
 };
 
 export const createCheckout = async (req, res, next) => {
-  console.log("checkout",req.body);
+  console.log("checkout", req.body);
 
   try {
-    // Validate the request body before proceeding
     if (!req.body || Object.keys(req.body).length === 0) {
       return res.status(400).json({ message: "Request body is required" });
     }
 
-    // Ignore userId if it's a string 'null'
     if (req.body.userId === "null") {
-      delete req.body.userId; // This will exclude userId from being saved
+      delete req.body.userId;
     }
-    const completeOrder = await Order.findById(req.body.orderId); // Assuming order._id is the orderId
-    console.log("completeorder", completeOrder);
-    // Create the order
-   
-    const checkout = await Checkout.create(req.body);
-console.log("well  of checkout");
-    // Fetch the complete order details using the orderId
-   
-    // Construct the email body with item details
+
+    // Fetch the complete order details
+    const completeOrder = await Order.findById(req.body.orderId);
+    console.log("completeOrder", completeOrder);
+
+    if (!completeOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    let checkout;
+
+    if (
+      req.body.paymentDetails &&
+      req.body.paymentDetails.payment_status_description === "no payment required"
+    ) {
+      // If no payment is required, create the order without payment details
+      checkout = await Checkout.create({ ...req.body, paymentDetails: null });
+      console.log("Checkout created without payment");
+    } else {
+      // If payment details are provided, update existing checkout
+      checkout = await Checkout.findOneAndUpdate(
+        { orderId: req.body.orderId },
+        { $set: { paymentDetails: req.body.paymentDetails } },
+        { new: true, upsert: true }
+      );
+      console.log("Checkout updated with payment details");
+    }
+
+    // Construct email body
     const emailBody = `
     <div style="background-color: #f9f9f9; padding: 30px; font-family: 'Arial', sans-serif; color: #333;">
         <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 10px; padding: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
@@ -105,10 +123,15 @@ console.log("well  of checkout");
             </table>
             <p style="font-size: 16px; margin-bottom: 10px;"><strong>Order ID:</strong> ${completeOrder._id}</p>
             <p style="font-size: 16px; margin-bottom: 10px;"><strong>Total Cost:</strong> Ksh${completeOrder.totalPrice}</p>
-            <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Account:</strong> ${req.body.paymentDetails.payment_account}</p>
-            
-            <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Status:</strong> ${req.body.paymentDetails.payment_status_description}</p>
-            <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Confirmation code:</strong> ${req.body.paymentDetails.confirmation_code}</p>
+            ${
+              req.body.paymentDetails
+                ? `
+                <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Account:</strong> ${req.body.paymentDetails.payment_account}</p>
+                <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Status:</strong> ${req.body.paymentDetails.payment_status_description}</p>
+                <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Confirmation code:</strong> ${req.body.paymentDetails.confirmation_code}</p>
+                `
+                : "<p style='font-size: 16px; margin-bottom: 10px; color: red;'><strong>Note:</strong> No payment required for this order.</p>"
+            }
             <p style="font-size: 16px; margin-bottom: 20px;">Items will be delivered to:</p>
             <p style="font-size: 16px; color: #4A90E2; margin-bottom: 30px;">
                 ${req.body.address}, ${req.body.city}, ${req.body.country}
@@ -120,35 +143,26 @@ console.log("well  of checkout");
         </div>
     </div>
     `;
-    
 
-    // Send confirmation email to the customer
     await sendEmail(req.body.email, "Your LSkin Order Confirmation", emailBody);
 
     console.log("saved", checkout);
-    return res.status(201).json(checkout); // Use 201 for successful resource creation
+    return res.status(201).json(checkout);
   } catch (err) {
-    console.error("Error creating order:", err); // Log the error for debugging
+    console.error("Error creating order:", err);
 
-    // Handle different error types
     if (err.name === "ValidationError") {
-      return res.status(400).json({
-        message: "Validation error",
-        errors: err.errors, // Send back validation errors
-      });
+      return res.status(400).json({ message: "Validation error", errors: err.errors });
     }
 
     if (err.name === "MongoError" && err.code === 11000) {
-      return res.status(409).json({ message: "Duplicate key error" }); // Handle duplicate key error
+      return res.status(409).json({ message: "Duplicate key error" });
     }
 
-    // Handle any other errors
-    return res.status(500).json({
-      message: "An unexpected error occurred",
-      error: err.message, // Send the error message for debugging
-    });
+    return res.status(500).json({ message: "An unexpected error occurred", error: err.message });
   }
 };
+
 
 export const checkout = async (req, res, next) => {
   try {
