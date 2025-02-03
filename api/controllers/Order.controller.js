@@ -98,9 +98,9 @@ export const createCheckout = async (req, res, next) => {
     const emailBody = `
     <div style="background-color: #f9f9f9; padding: 30px; font-family: 'Arial', sans-serif; color: #333;">
         <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 10px; padding: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
-            <h2 style="color: #4A90E2; text-align: center; font-size: 24px; margin-bottom: 20px;">Your LSkin Order Confirmation</h2>
+            <h2 style="color: #4A90E2; text-align: center; font-size: 24px; margin-bottom: 20px;">Your SmeTemplate Order Confirmation</h2>
             <p style="font-size: 16px; margin-bottom: 20px;">Dear <strong>${req.body.firstName} ${req.body.lastName}</strong>,</p>
-            <p style="font-size: 16px; margin-bottom: 20px;">Thank you for shopping with LSkin! Your order has been successfully confirmed. Here are your order details:</p>
+            <p style="font-size: 16px; margin-bottom: 20px;">Thank you for shopping with SmeTemplate! Your order has been successfully confirmed. Here are your order details:</p>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                 <tr style="background-color: #f4f4f9;">
                     <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Item</th>
@@ -124,7 +124,7 @@ export const createCheckout = async (req, res, next) => {
             <p style="font-size: 16px; margin-bottom: 10px;"><strong>Order ID:</strong> ${completeOrder._id}</p>
             <p style="font-size: 16px; margin-bottom: 10px;"><strong>Total Cost:</strong> Ksh${completeOrder.totalPrice}</p>
             ${
-              req.body.paymentDetails
+              req.body.paymentDetail
                 ? `
                 <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Account:</strong> ${req.body.paymentDetails.payment_account}</p>
                 <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Status:</strong> ${req.body.paymentDetails.payment_status_description}</p>

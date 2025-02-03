@@ -14,7 +14,7 @@ const Productfilter = ({ categoryName, products, userId }) => {
   }, []);
 
   // Determine how many items per page based on screen size
-  const itemsPerPage = isSmallScreen ? 4 : 6;
+  const itemsPerPage = isSmallScreen ? 4 : 8;
 
   const [selectedType, setSelectedType] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
