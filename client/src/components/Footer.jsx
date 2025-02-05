@@ -33,7 +33,6 @@ const Footer = ({ data }) => {
   }
 
   const currentShop = data[0];
-  console.log("Footer Data:", currentShop);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

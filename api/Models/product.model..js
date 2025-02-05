@@ -21,14 +21,7 @@ const ProductSchema = new mongoose.Schema({
   },
 
   // Availability
-  availabilityHours: {
-    type: String, // E.g., "9 AM - 5 PM"
-    required: false,
-  },
-  availabilityDays: {
-    type: [String], // E.g., ["Monday", "Tuesday"]
-    required: false,
-  },
+
   variants: [
     {
       size: { type: String }, // E.g., "S", "M", "L", "XL"

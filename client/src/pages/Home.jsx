@@ -24,7 +24,6 @@ const Home = ({ setFooterData }) => {
         throw new Error(`Error: ${response.status}`);
       }
       const data = await response.json();
-      console.log("Fetched Data:", data);
       setFooterData(data);
 
       if (data.length > 0) {

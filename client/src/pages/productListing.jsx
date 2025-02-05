@@ -26,9 +26,9 @@ const ProductDetail = () => {
           setSelectedImage(data.imageUrls[0]);
         }
 
-        // If the product has variants, default to the first variant (if you wish)
-        if (data.variants && data.variants.length > 0) {
-          setSelectedVariant(data.variants[0].name); // for example
+        // If the product has variants, default to the first variant (if available)
+        if (Array.isArray(data.variants) && data.variants.length > 0) {
+          setSelectedVariant(data.variants[0].name);
         }
 
         setLoading(false);
@@ -56,8 +56,6 @@ const ProductDetail = () => {
     price,
     stock,
     discounts,
-    availabilityDays,
-    availabilityHours,
     imageUrls,
     Type,
     variants,
@@ -67,6 +65,19 @@ const ProductDetail = () => {
   const handleVariantChange = (e) => {
     setSelectedVariant(e.target.value);
   };
+
+  // Format the description into a bullet list
+  const formattedDescription = description
+    ? description.split("||").map((item) => item.trim())
+    : [];
+
+  // Calculate discount price if applicable
+  let discountAmount = 0;
+  let discountedPrice = price;
+  if (discounts && parseInt(discounts) > 0) {
+    discountAmount = (parseInt(discounts) / 100) * price;
+    discountedPrice = price - discountAmount;
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-4">
@@ -127,9 +138,16 @@ const ProductDetail = () => {
         <div className="md:w-1/2 flex flex-col">
           {/* Price & Discounts */}
           <div className="mb-3">
-            <p className="text-xl md:text-2xl font-bold text-gray-800">
-              Ksh {price}
-            </p>
+            {discountAmount > 0 ? (
+              <p className="text-xl md:text-2xl font-bold text-gray-800">
+                <span className="line-through text-gray-500">Ksh {price}</span>{" "}
+                <span className="text-red-500">Ksh {discountedPrice}</span>
+              </p>
+            ) : (
+              <p className="text-xl md:text-2xl font-bold text-gray-800">
+                Ksh {price}
+              </p>
+            )}
             {discounts && (
               <p className="text-sm md:text-base text-red-500 font-semibold">
                 Discounts: {discounts}
@@ -137,33 +155,62 @@ const ProductDetail = () => {
             )}
           </div>
 
-          {/* Description */}
-          <p className="text-sm md:text-base text-gray-700 mb-4 leading-relaxed">
-            {description}
-          </p>
+          {/* Description as Bullet Points */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">
+              Description:
+            </h3>
+            <ul className="list-disc pl-5 text-gray-700">
+              {formattedDescription.map((point, index) => (
+                <li key={index}>{point}</li>
+              ))}
+            </ul>
+          </div>
 
-          {/* Variant Selection (optional) */}
-          {variants && variants.length > 0 && (
-            <div className="mb-4">
+          {/* Variant Selection (Fix: Ensure variants are displayed) */}
+          {Array.isArray(variants) && variants.length > 0 ? (
+            <div className="mb-6">
               <label
                 htmlFor="variant"
-                className="block text-sm md:text-base text-gray-700 mb-1 font-medium"
+                className="block text-sm md:text-base text-gray-700 font-semibold mb-2"
               >
-                Choose a variant:
+                Choose a Variant:
               </label>
-              <select
-                id="variant"
-                value={selectedVariant}
-                onChange={handleVariantChange}
-                className="border border-sky-200 rounded-md py-2 px-3 text-sm md:text-base w-full focus:outline-none focus:ring-2 focus:ring-sky-400"
-              >
-                {variants.map((variant) => (
-                  <option key={variant.name} value={variant.name}>
-                    {variant.name}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="variant"
+                  value={selectedVariant}
+                  onChange={handleVariantChange}
+                  className="appearance-none border border-gray-300 bg-white rounded-lg py-2 px-4 text-sm md:text-base w-full focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400 transition-all shadow-sm"
+                >
+                  {variants.map((variant) => (
+                    <option key={variant._id} value={variant.size}>
+                      {variant.size.toUpperCase()} (Stock: {variant.stock})
+                    </option>
+                  ))}
+                </select>
+
+                {/* Dropdown Arrow */}
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                  <svg
+                    className="w-4 h-4 text-gray-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
+          ) : (
+            <p className="text-sm text-gray-500 mb-4">No variants available</p>
           )}
 
           {/* Stock & Availability */}
@@ -174,14 +221,6 @@ const ProductDetail = () => {
                 {stock > 0 ? stock : "Out of stock"}
               </span>
             </p>
-            {availabilityDays && availabilityHours && (
-              <p className="text-sm md:text-base text-gray-600">
-                Available:{" "}
-                <span className="font-medium">
-                  {availabilityDays.join(", ")} ({availabilityHours})
-                </span>
-              </p>
-            )}
           </div>
 
           {/* Add to Cart Button */}

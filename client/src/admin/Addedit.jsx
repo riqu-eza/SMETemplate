@@ -196,7 +196,7 @@ const AddEditForm = ({ editingItem, setEditingItem, refreshData, shopId }) => {
         <input
           type="text"
           name="description"
-          placeholder="Description"
+          placeholder="Description (separeted by `||`)"
           value={formData.description || ""}
           onChange={handleInputChange}
           className="border rounded w-full p-2 mt-1 focus:ring-2 focus:ring-blue-400"
@@ -272,37 +272,10 @@ const AddEditForm = ({ editingItem, setEditingItem, refreshData, shopId }) => {
       </label>
 
       {/* Availability Hours */}
-      <label className="block mb-2">
-        <span className="text-gray-700 font-semibold">Availability Hours</span>
-        <input
-          type="text"
-          name="availabilityHours"
-          placeholder="Availability Hours"
-          value={formData.availabilityHours || ""}
-          onChange={handleInputChange}
-          className="border rounded w-full p-2 mt-1 focus:ring-2 focus:ring-blue-400"
-        />
-      </label>
+      
 
       {/* Availability Days */}
-      <label className="block mb-2">
-        <span className="text-gray-700 font-semibold">Availability Days</span>
-        <input
-          type="text"
-          name="availabilityDays"
-          placeholder="Availability Days (comma separated)"
-          value={formData.availabilityDays?.join(", ") || ""}
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              availabilityDays: e.target.value
-                .split(",")
-                .map((day) => day.trim()),
-            }))
-          }
-          className="border rounded w-full p-2 mt-1 focus:ring-2 focus:ring-blue-400"
-        />
-      </label>
+      
 
       {/* Variants */}
       <div className="mb-4 mt-4">

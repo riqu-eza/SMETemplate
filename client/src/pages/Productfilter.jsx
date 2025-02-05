@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import ProductCard from "../components/product.jsx";
 
 const Productfilter = ({ categoryName, products, userId }) => {
   const [isSmallScreen, setIsSmallScreen] = useState(() => window.innerWidth < 768);
+  const productContainerRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -36,8 +37,21 @@ const Productfilter = ({ categoryName, products, userId }) => {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+    if (productContainerRef.current) {
+      productContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY < 50 && currentPage > 1) {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [currentPage]);
   return (
     // Main background with a sky-blue gradient
     <div className="min-h-screen pb-6 bg-gradient-to-b from-sky-50 to-sky-100">
