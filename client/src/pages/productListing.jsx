@@ -1,16 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import {  useNavigate, useParams } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 const ProductDetail = () => {
+  // eslint-disable-next-line no-unused-vars
   const { productId, userId } = useParams();
   const [product, setProduct] = useState(null);
+  const { addToCart } = useCart();
   const [selectedImage, setSelectedImage] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState("");
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -65,7 +68,11 @@ const ProductDetail = () => {
   const handleVariantChange = (e) => {
     setSelectedVariant(e.target.value);
   };
-
+ 
+  const handleAddToCartAndGoToCart = () => {
+    addToCart(product, selectedVariant);
+    navigate("/cart"); // Redirect to Cart Page
+  };
   // Format the description into a bullet list
   const formattedDescription = description
     ? description.split("||").map((item) => item.trim())
@@ -225,12 +232,13 @@ const ProductDetail = () => {
 
           {/* Add to Cart Button */}
           <div>
-            <Link
-              to={`/cart/${productId}/${userId}`}
+          <button
+              onClick={handleAddToCartAndGoToCart}
               className="inline-block bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-md transition-colors"
             >
-              Add to Bag
-            </Link>
+              Add to Cart 
+            </button>
+            
           </div>
         </div>
       </div>

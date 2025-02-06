@@ -106,6 +106,7 @@ export const createCheckout = async (req, res, next) => {
                     <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Item</th>
                     <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Price</th>
                     <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Quantity</th>
+                    <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Variant</th>
                     <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Total</th>
                 </tr>
                 ${completeOrder.items
@@ -115,7 +116,9 @@ export const createCheckout = async (req, res, next) => {
                         <td style="padding: 10px; border: 1px solid #ddd;">${item.name}</td>
                         <td style="padding: 10px; border: 1px solid #ddd;">Ksh${item.price}</td>
                         <td style="padding: 10px; border: 1px solid #ddd;">${item.quantity}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${item.selectedVariant}</td>
                         <td style="padding: 10px; border: 1px solid #ddd;">Ksh${item.price * item.quantity}</td>
+                        
                     </tr>
                   `
                   )
@@ -130,7 +133,7 @@ export const createCheckout = async (req, res, next) => {
                 <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Status:</strong> ${req.body.paymentDetails.payment_status_description}</p>
                 <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Confirmation code:</strong> ${req.body.paymentDetails.confirmation_code}</p>
                 `
-                : "<p style='font-size: 16px; margin-bottom: 10px; color: red;'><strong>Note:</strong> No payment required for this order.</p>"
+                : "<p style='font-size: 16px; margin-bottom: 10px; color: #16467d;'><strong>Note:</strong> Payments will be done on Collection.</p>"
             }
             <p style="font-size: 16px; margin-bottom: 20px;">Items will be delivered to:</p>
             <p style="font-size: 16px; color: #4A90E2; margin-bottom: 30px;">
@@ -144,7 +147,7 @@ export const createCheckout = async (req, res, next) => {
     </div>
     `;
 
-    await sendEmail(req.body.email, "Your LSkin Order Confirmation", emailBody);
+    await sendEmail(req.body.email, "Your SMETEMPLATE Order Confirmation", emailBody);
 
     console.log("saved", checkout);
     return res.status(201).json(checkout);

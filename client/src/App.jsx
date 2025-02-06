@@ -50,7 +50,7 @@ export default function App() {
                 path="/buy/:productId/:userId"
                 element={<Checkout />}
               />
-              <Route path="/checkout/:orderId" element={<Checkout />} />
+              <Route path="/checkout" element={<Checkout />} />
               <Route
                 path="/category/:categoryName"
                 element={<CategoryListing />}
