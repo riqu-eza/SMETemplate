@@ -82,6 +82,7 @@ const ShopList = () => {
         location: { ...prev.location, [field]: value },
       }));
     } else if (name.startsWith("operationperiods.")) {
+      // eslint-disable-next-line no-unused-vars
       const [_, day, period] = name.split(".");
       setNewShop((prev) => ({
         ...prev,

@@ -256,7 +256,14 @@ const EditShop = ({ shop, onUpdate, onClose }) => {
             placeholder="Phone Number"
             className="w-full p-2 border border-gray-300 rounded"
           />
-
+<input
+            type="text"
+            name="location.mapurl"
+            value={editedShop.location.mapurl}
+            onChange={handleInputChange}
+            placeholder="map url"
+            className="w-full p-2 border border-gray-300 rounded"
+          />
           <textarea
             name="companypolicy"
             value={editedShop.companypolicy}
