@@ -23,6 +23,7 @@ import ShopList from "./admin/Shop";
 import AddProductsPage from "./admin/AddProduct";
 import Header from "./components/header";
 import ProductDetail from "./pages/productListing";
+import {FloatingWhatsApp} from "react-floating-whatsapp";
 
 export default function App() {
   const [footerData, setFooterData] = useState(null);
@@ -71,6 +72,14 @@ export default function App() {
           </div>
           {/* Pass the footerData to Footer */}
           <Footer data={footerData} />
+          <FloatingWhatsApp
+            phoneNumber="0797037687" // Replace with your WhatsApp number
+            accountName="Dancah Technology" // Displayed name on the chat widget
+            chatMessage="Hi there! How can we help?"
+            avatar="/logo.jpg" 
+            statusMessage="We are Getting to you"// Default chat message
+            allowEsc // Allows closing the chat with the Escape key
+          />
         </BrowserRouter>
       </UserProvider>
     </CartProvider>
