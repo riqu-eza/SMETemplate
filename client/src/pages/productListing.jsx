@@ -1,11 +1,12 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
-import {  useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import RelatedProducts from "../components/Relatedproducts";
 
 const ProductDetail = () => {
-  // eslint-disable-next-line no-unused-vars
   const { productId, userId } = useParams();
   const [product, setProduct] = useState(null);
   const { addToCart } = useCart();
@@ -13,7 +14,9 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState("");
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const navigate = useNavigate();
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -23,7 +26,6 @@ const ProductDetail = () => {
         }
         const data = await response.json();
         setProduct(data);
-
         // Set default main image
         if (data.imageUrls && data.imageUrls.length > 0) {
           setSelectedImage(data.imageUrls[0]);
@@ -43,6 +45,31 @@ const ProductDetail = () => {
 
     fetchProduct();
   }, [productId]);
+
+  // Once the main product is loaded, fetch related products
+  useEffect(() => {
+    if (product) {
+      const fetchRelatedProducts = async () => {
+        try {
+          // Example: Fetch related products based on the product's type (or category)
+          // You might need to adjust the API endpoint to suit your backend
+          const response = await fetch(
+            `/api/listing/products?category=${product.categoryId}&exclude=${productId}`
+          );
+          if (!response.ok) {
+            throw new Error("Error fetching related products");
+          }
+          const data = await response.json();
+          setRelatedProducts(data);
+          console.log(data);
+        } catch (error) {
+          console.error("Error fetching related products:", error);
+        }
+      };
+
+      fetchRelatedProducts();
+    }
+  }, [product, productId]);
 
   if (loading) {
     return <div className="p-4 text-center">Loading product details...</div>;
@@ -68,11 +95,12 @@ const ProductDetail = () => {
   const handleVariantChange = (e) => {
     setSelectedVariant(e.target.value);
   };
- 
+
   const handleAddToCartAndGoToCart = () => {
     addToCart(product, selectedVariant);
     navigate("/cart"); // Redirect to Cart Page
   };
+
   // Format the description into a bullet list
   const formattedDescription = description
     ? description.split("||").map((item) => item.trim())
@@ -174,7 +202,7 @@ const ProductDetail = () => {
             </ul>
           </div>
 
-          {/* Variant Selection (Fix: Ensure variants are displayed) */}
+          {/* Variant Selection */}
           {Array.isArray(variants) && variants.length > 0 ? (
             <div className="mb-6">
               <label
@@ -232,16 +260,25 @@ const ProductDetail = () => {
 
           {/* Add to Cart Button */}
           <div>
-          <button
+            <button
               onClick={handleAddToCartAndGoToCart}
               className="inline-block bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-md transition-colors"
             >
-              Add to Cart 
+              Add to Cart
             </button>
-            
           </div>
         </div>
       </div>
+
+      {/* Related Products Section */}
+      {relatedProducts && relatedProducts.length > 0 && (
+        <div className="mt-28 border-black border-t-2" >
+          <h3 className="text-xl text-center font-semibold mt-6  text-gray-800">
+            You may also like:
+          </h3>
+          <RelatedProducts relatedProducts={relatedProducts} />
+        </div>
+      )}
     </div>
   );
 };

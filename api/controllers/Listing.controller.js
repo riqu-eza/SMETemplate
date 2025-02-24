@@ -59,7 +59,29 @@ export const getProduct = async (req, res, next) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+export const getProducts = async (req, res, next) => {
+  try {
+    // Read query parameters from the URL
+    const { category, exclude } = req.query;
+    let filter = {};
 
+    // If a category is provided, filter by categoryId
+    if (category) {
+      filter.categoryId = category;
+    }
+
+    // If an "exclude" product id is provided, ensure it is not included in the results
+    if (exclude) {
+      filter._id = { $ne: exclude };
+    }
+
+    const products = await Product.find(filter);
+    return res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 export const getCategory = async (req, res, next) => {
   try {
     const categoryName = req.params.categoryName.trim();
