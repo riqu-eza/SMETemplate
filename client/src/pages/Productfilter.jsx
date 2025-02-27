@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect,useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import ProductCard from "../components/product.jsx";
 
 const Productfilter = ({ categoryName, products, userId }) => {
@@ -14,20 +14,30 @@ const Productfilter = ({ categoryName, products, userId }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Determine how many items per page based on screen size
+  // Determine items per page based on screen size
   const itemsPerPage = isSmallScreen ? 4 : 8;
 
   const [selectedType, setSelectedType] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Create a list of unique types
-  const types = ["All", ...new Set(products.map((p) => p.Type))];
+  // Helper function to normalize type names
+  const normalizeType = (type) => {
+    if (!type) return "";
+    let normalized = type.trim().toLowerCase();
+    if (normalized.endsWith("s")) {
+      normalized = normalized.slice(0, -1);
+    }
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  };
 
-  // Filter the products by the selected type
+  // Create a list of unique normalized types
+  const types = ["All", ...new Set(products.map((p) => normalizeType(p.Type)))];
+
+  // Filter the products using the normalized type
   const filteredProducts =
     selectedType === "All"
       ? products
-      : products.filter((p) => p.Type === selectedType);
+      : products.filter((p) => normalizeType(p.Type) === selectedType);
 
   // Paginate
   const indexOfLastProduct = currentPage * itemsPerPage;
@@ -42,16 +52,23 @@ const Productfilter = ({ categoryName, products, userId }) => {
     }
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY < 50 && currentPage > 1) {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-      }
-    };
+  // Remove the scroll event listener that resets the page number
+  // (Commented out to prevent auto-reset when scrolling near the top)
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (window.scrollY < 50 && currentPage > 1) {
+  //       setCurrentPage((prev) => Math.max(prev - 1, 1));
+  //     }
+  //   };
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, [currentPage]);
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [currentPage]);
+  // Ensure the page starts at the top when the component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     // Main background with a sky-blue gradient
     <div className="min-h-screen pb-6 bg-gradient-to-b from-sky-50 to-sky-100">
@@ -66,14 +83,9 @@ const Productfilter = ({ categoryName, products, userId }) => {
         <div className="md:w-1/4 w-full p-4 border-b md:border-b-0 md:border-r border-sky-200 bg-sky-50">
           <h3 className="text-xm font-bold text-sky-700 mb-4">Filter by Type</h3>
 
-          {/**
-           * On small screens: horizontal, scrollable filter list
-           * On medium+ screens: vertical list with spacing
-           */}
           <ul
             className={`
-              flex md:flex-col
-              gap-2
+              flex md:flex-col gap-2
               overflow-x-auto md:overflow-visible
               scrollbar-thin scrollbar-thumb-rounded
             `}
@@ -86,8 +98,7 @@ const Productfilter = ({ categoryName, products, userId }) => {
                   setCurrentPage(1);
                 }}
                 className={`
-                  cursor-pointer py-2 px-3 rounded transition-colors 
-                  whitespace-nowrap
+                  cursor-pointer py-2 px-3 rounded transition-colors whitespace-nowrap
                   ${
                     selectedType === type
                       ? "bg-sky-200 text-sky-900 font-semibold shadow-sm"
@@ -102,15 +113,11 @@ const Productfilter = ({ categoryName, products, userId }) => {
         </div>
 
         {/* Products Section */}
-        <div className="md:w-3/4 w-full p-4">
+        <div ref={productContainerRef} className="md:w-3/4 w-full p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {currentProducts.length > 0 ? (
               currentProducts.map((product) => (
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                  userId={userId}
-                />
+                <ProductCard key={product._id} product={product} userId={userId} />
               ))
             ) : (
               <p className="col-span-full text-center text-gray-600">
