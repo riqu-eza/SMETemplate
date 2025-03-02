@@ -73,7 +73,7 @@ export default function App() {
           {/* Pass the footerData to Footer */}
           <Footer data={footerData} />
           <FloatingWhatsApp
-            phoneNumber="0797037687" // Replace with your WhatsApp number
+            phoneNumber="+254797037687" // Replace with your WhatsApp number
             accountName="Dancah Technology" // Displayed name on the chat widget
             chatMessage="Hi there! How can we help?"
             avatar="/logo.jpg" 

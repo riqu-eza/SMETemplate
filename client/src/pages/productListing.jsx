@@ -16,7 +16,10 @@ const ProductDetail = () => {
   const [selectedVariant, setSelectedVariant] = useState("");
   const [relatedProducts, setRelatedProducts] = useState([]);
   const navigate = useNavigate();
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [productId]);
+  
   useEffect(() => {
     const fetchProduct = async () => {
       try {
