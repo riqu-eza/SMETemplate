@@ -10,7 +10,7 @@ services:
     environment:
       - NODE_ENV=production
     env_file:
-      - tenant-configs.env
+      - tenant_configs.env
 
   client:
     build: ./client
