@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: sme_api
+    ports:
+      - "3011:3011"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - tenant-configs.env
+
+  client:
+    build: ./client
+    container_name: sme_client
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    environment:
+      - NODE_ENV=production
