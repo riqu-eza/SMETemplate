@@ -35,17 +35,26 @@ const tenantConnections = {};
 
 // Helper function to create or retrieve a connection for a given tenant configuration.
 function getTenantConnection(tenantConfig) {
-  // Use the MONGO URI and an optional DB_NAME as a key.
   const key = tenantConfig.MONGO + (tenantConfig.DB_NAME || "");
   if (tenantConnections[key]) return tenantConnections[key];
+
   const connection = mongoose.createConnection(tenantConfig.MONGO, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    dbName: tenantConfig.DB_NAME // Optional: if each tenant uses its own database
+    dbName: tenantConfig.DB_NAME // optional if tenants use separate databases
   });
+
+  connection.once("open", () => {
+    console.log(`Connection opened for tenant: ${tenantConfig.MONGO}`);
+  });
+  connection.on("error", (err) => {
+    console.error("Connection error for tenant:", err);
+  });
+
   tenantConnections[key] = connection;
   return connection;
 }
+
 
 const __dirname = path.resolve();
 const app = express();
