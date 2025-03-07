@@ -1,8 +1,8 @@
 // models/index.js
 
-import CategorySchema from "./Cateogry.model";
-import ProductSchema from "./product.model.";
-import ShopSchema from "./Shop.model";
+import CategorySchema from "./Category.model.js";
+import ProductSchema from "./product.model.js.";
+import ShopSchema from "./Shop.model.js";
 
 /**
  * Registers (if necessary) and returns tenant-specific models
