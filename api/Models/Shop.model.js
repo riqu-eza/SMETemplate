@@ -1,12 +1,13 @@
+// Shop.model.js
 import mongoose from "mongoose";
 
 const ShopSchema = new mongoose.Schema({
   name: { type: String, required: true },
   imageUrls: [{ type: String }],
-  promotionalimages:[{type:String}],
+  promotionalimages: [{ type: String }],
   owner: { type: String, required: true },
   owneremail: { type: String, required: true },
-  companypolicy:{ type:String, requires: true},
+  companypolicy: { type: String, required: true },
   operationperiods: {
     type: Map,
     of: {
@@ -14,9 +15,8 @@ const ShopSchema = new mongoose.Schema({
       close: { type: String, required: true },
     },
   },
-  
-  socialmedialinks:[{type:String}],
-  payonorder:{ type: Boolean, default: true },
+  socialmedialinks: [{ type: String }],
+  payonorder: { type: Boolean, default: true },
   categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
   contact: {
     email: { type: String, required: true },
@@ -28,6 +28,5 @@ const ShopSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
 });
-
 
 export default ShopSchema;

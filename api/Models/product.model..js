@@ -6,30 +6,21 @@ const ProductSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   stock: { type: Number, default: 0 },
   specifications: { type: String, required: false },
-  Type:{type: String, required: false},
-  // Pricing Details
+  Type: { type: String, required: false },
   pricingType: {
     type: String,
-    enum: ["Fixed", "Variable", "Negotiable"], // Specify allowed values
+    enum: ["Fixed", "Variable", "Negotiable"],
     default: "Fixed",
     required: true,
   },
   hasOffers: { type: Boolean, default: false },
-  discounts: {
-    type: String, // E.g., "10% off", "Buy 1 Get 1 Free"
-    default: "",
-  },
-
-  // Availability
-
+  discounts: { type: String, default: "" },
   variants: [
     {
-      size: { type: String }, // E.g., "S", "M", "L", "XL"
-      stock: { type: Number, default: 0 }, // Stock for the specific variant
+      size: { type: String },
+      stock: { type: Number, default: 0 },
     },
   ],
-
-  // Relations
   categoryId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
@@ -37,10 +28,7 @@ const ProductSchema = new mongoose.Schema({
   },
   shopId: { type: mongoose.Schema.Types.ObjectId, ref: "Shop", required: true },
   imageUrls: [{ type: String }],
-
-  // Timestamps
   createdAt: { type: Date, default: Date.now },
 });
-
 
 export default ProductSchema;
