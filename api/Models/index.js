@@ -1,7 +1,7 @@
 // models/index.js
 
 import CategorySchema from "./Category.model.js";
-import ProductSchema from "./product.model.js.";
+import ProductSchema from "./product.model.js";
 import ShopSchema from "./Shop.model.js";
 
 /**
