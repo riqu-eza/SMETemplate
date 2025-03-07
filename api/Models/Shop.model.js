@@ -29,6 +29,5 @@ const ShopSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-const Shop = mongoose.model("shop", ShopSchema);
 
-export default Shop;
+export default ShopSchema;

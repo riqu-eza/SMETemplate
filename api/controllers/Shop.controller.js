@@ -1,20 +1,20 @@
-import Category from "../Models/Cateogry.model.js";
-import Product from "../Models/product.model..js";
-import Shop from "../Models/Shop.model.js";
+// controllers/Shop.controller.js (updated for multi-tenancy)
+
+// Note: No direct imports from "../Models/Shop.model.js", etc.
 
 export const fetchCategoriesForShop = async (req, res, next) => {
   const { shopId } = req.params;
-
+  // Get tenant-specific models
+  const { Shop, Category } = req.models;
+  
   try {
-    // Verify the shop exists
+    // Verify the shop exists on the tenant-specific connection
     const shop = await Shop.findById(shopId);
     if (!shop) {
       return res.status(404).json({ message: "Shop not found" });
     }
-
     // Fetch all categories for the shop
     const categories = await Category.find({ shopId });
-
     res.status(200).json(categories);
   } catch (error) {
     console.error("Error fetching categories for shop:", error.message);
@@ -22,9 +22,9 @@ export const fetchCategoriesForShop = async (req, res, next) => {
   }
 };
 
-
 export const createShop = async (req, res) => {
-  console.log(req.body)
+  const { Shop } = req.models;
+  console.log(req.body);
   try {
     const shop = new Shop(req.body);
     await shop.save();
@@ -35,67 +35,65 @@ export const createShop = async (req, res) => {
 };
 
 export const getShop = async (req, res, next) => {
+  const { Shop } = req.models;
   try {
-    const shops = await Shop.find(); // Fetch all shops from MongoDB
-    res.status(200).json(shops); // Return the shops as JSON
+    const shops = await Shop.find(); // Query on the tenant-specific connection
+    res.status(200).json(shops);
   } catch (err) {
-    console.error("Error fetching shops:", err.message); // Log the error for debugging
-    next(err); // Pass the error to the error-handling middleware
+    console.error("Error fetching shops:", err.message);
+    next(err);
   }
 };
 
 export const updateShop = async (req, res) => {
   const { shopId } = req.params;
   const updateData = req.body;
-
+  const { Shop } = req.models;
+  
   try {
     const updatedShop = await Shop.findByIdAndUpdate(shopId, updateData, {
-      new: true, // Return the updated document
-      runValidators: true, // Validate before updating
+      new: true,
+      runValidators: true,
     });
-
     if (!updatedShop) {
       return res.status(404).json({ error: "Shop not found" });
     }
-
     res.status(200).json(updatedShop);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
+
 export const addCategoryToShop = async (req, res) => {
   const { shopId, categoryData } = req.body;
-
+  const { Shop, Category } = req.models;
+  
   if (!shopId || !categoryData) {
     console.error("Missing shopId or categoryData");
-    return res
-      .status(400)
-      .json({ message: "Shop ID and category data are required." });
+    return res.status(400).json({ message: "Shop ID and category data are required." });
   }
 
   try {
     if (categoryData._id) {
-      // Update existing category
+      // Update existing category on tenant-specific connection
       const updatedCategory = await Category.findByIdAndUpdate(
         categoryData._id,
-        { ...categoryData, shopId }, // Ensure shopId is explicitly updated
-        { new: true } // Return the updated document
+        { ...categoryData, shopId },
+        { new: true }
       );
-
       if (!updatedCategory) {
         throw new Error("Category not found");
       }
-
       return res.status(200).json(updatedCategory);
     } else {
-      // Create new category
+      // Create new category on tenant-specific connection
       const category = new Category({ ...categoryData, shopId });
       await category.save();
 
+      // Update the shop's categories array
       await Shop.findByIdAndUpdate(shopId, {
         $push: { categories: category._id },
       });
-
       return res.status(201).json(category);
     }
   } catch (error) {
@@ -104,30 +102,24 @@ export const addCategoryToShop = async (req, res) => {
   }
 };
 
-
-
- // Import your Shop model (if categories are linked to shops)
-
 export const deleteCategory = async (req, res) => {
   const { categoryId } = req.params;
-
+  const { Shop, Category } = req.models;
+  
   try {
-    // Find the category to ensure it exists
+    // Ensure the category exists on the tenant-specific connection
     const category = await Category.findById(categoryId);
     if (!category) {
       return res.status(404).json({ message: "Category not found" });
     }
-
-    // Remove the category reference from the Shop, if applicable
+    // Remove the category reference from the Shop
     if (category.shopId) {
       await Shop.findByIdAndUpdate(category.shopId, {
         $pull: { categories: categoryId },
       });
     }
-
-    // Delete the category from the database
+    // Delete the category
     await Category.findByIdAndDelete(categoryId);
-
     res.status(200).json({ message: "Category deleted successfully" });
   } catch (error) {
     console.error("Error deleting category:", error);
@@ -135,28 +127,31 @@ export const deleteCategory = async (req, res) => {
   }
 };
 
-
 export const addproducttypeToShop = async (shopId, producttypeData) => {
-  const category = new Category(producttypeData);
-  await category.save();
-
-  await Shop.findByIdAndUpdate(shopId, { $push: { categories: category._id } });
-  console.log("Category added to shop");
+  // For non-request functions, you may need to pass in the tenant-specific models as arguments.
+  // Alternatively, if this is used in a route, use req.models.
+  const { Shop, Category } = req.models; // Make sure req.models is available in context!
+  
+  try {
+    const category = new Category(producttypeData);
+    await category.save();
+    await Shop.findByIdAndUpdate(shopId, { $push: { categories: category._id } });
+    console.log("Category added to shop");
+  } catch (error) {
+    console.error("Error adding product type to shop:", error);
+  }
 };
 
 export const getProductsBySubcategory = async (req, res, next) => {
   const { categoryId } = req.params;
-
+  const { Product } = req.models;
+  
   try {
-    // Fetch products belonging to the specified subcategory
-    const products = await Product.find({ categoryId: categoryId });
-
+    // Fetch products on the tenant-specific connection
+    const products = await Product.find({ categoryId });
     if (!products || products.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No products found for this subcategory" });
+      return res.status(404).json({ message: "No products found for this subcategory" });
     }
-
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products for subcategory:", error.message);
@@ -165,6 +160,8 @@ export const getProductsBySubcategory = async (req, res, next) => {
 };
 
 export const createproduct = async (req, res) => {
+  const { Product } = req.models;
+  
   try {
     const product = new Product(req.body);
     await product.save();
@@ -173,8 +170,11 @@ export const createproduct = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
 export const deleteproduct = async (req, res) => {
   const { productId } = req.params;
+  const { Product } = req.models;
+  
   try {
     const deletedProduct = await Product.findByIdAndDelete(productId);
     if (!deletedProduct) {
@@ -186,39 +186,30 @@ export const deleteproduct = async (req, res) => {
     res.status(500).json({ message: "Error deleting product" });
   }
 };
+
 export const createItem = async (req, res, next) => {
   const { type, shopId } = req.params; // 'categories' or 'products'
   const data = req.body;
-
+  const { Category, Product } = req.models;
+  
   try {
     let newItem;
-
     if (type === "categories") {
       newItem = new Category({ ...data, shopId });
     } else if (type === "products") {
       if (!data.categoryId) {
-        return res
-          .status(400)
-          .json({ message: "categoryId is required for products." });
+        return res.status(400).json({ message: "categoryId is required for products." });
       }
-
-      // Create the product
       newItem = new Product({ ...data, shopId });
-
-      // Save the product
       const savedProduct = await newItem.save();
-
       // Add the product to the category's products array
       await Category.findByIdAndUpdate(data.categoryId, {
-        $addToSet: { products: savedProduct._id }, // Prevent duplicate product IDs
+        $addToSet: { products: savedProduct._id },
       });
-
       return res.status(201).json(savedProduct);
     } else {
       return res.status(400).json({ message: "Invalid type specified." });
     }
-
-    // Save categories
     const savedItem = await newItem.save();
     return res.status(201).json(savedItem);
   } catch (error) {
@@ -227,36 +218,23 @@ export const createItem = async (req, res, next) => {
   }
 };
 
-
 export const updateItem = async (req, res, next) => {
   const { type, id, shopId } = req.params; // 'categories' or 'products'
   const updates = req.body;
-
+  const { Category, Product } = req.models;
+  
   try {
     let updatedItem;
-
     if (type === "categories") {
-      updatedItem = await Category.findByIdAndUpdate(
-        id,
-        { ...updates, shopId },
-        { new: true }
-      );
+      updatedItem = await Category.findByIdAndUpdate(id, { ...updates, shopId }, { new: true });
     } else if (type === "products") {
-      updatedItem = await Product.findByIdAndUpdate(
-        id,
-        { ...updates, shopId },
-        { new: true }
-      );
+      updatedItem = await Product.findByIdAndUpdate(id, { ...updates, shopId }, { new: true });
     } else {
       return res.status(400).json({ message: "Invalid type specified." });
     }
-
     if (!updatedItem) {
-      return res
-        .status(404)
-        .json({ message: `${type.slice(0, -1)} not found.` });
+      return res.status(404).json({ message: `${type.slice(0, -1)} not found.` });
     }
-
     return res.status(200).json(updatedItem);
   } catch (error) {
     console.error("Error updating item:", error.message);
@@ -266,26 +244,18 @@ export const updateItem = async (req, res, next) => {
 
 export const updateCategory = async (req, res) => {
   const { categoryId } = req.params;
-  const { name, parentId } = req.body; // Update fields
-
+  const { name, parentId } = req.body; // fields to update
+  const { Category } = req.models;
+  
   try {
-    // Find the category by ID
     const category = await Category.findById(categoryId);
-
     if (!category) {
       return res.status(404).json({ error: "Category not found" });
     }
-
-    // Update the category fields
     if (name) category.name = name;
     if (parentId) category.parentId = parentId;
-
-    // Save the updated category
     await category.save();
-
-    res
-      .status(200)
-      .json({ message: "Category updated successfully", category });
+    res.status(200).json({ message: "Category updated successfully", category });
   } catch (error) {
     console.error("Error updating category:", error);
     res.status(500).json({ error: "Failed to update category" });
