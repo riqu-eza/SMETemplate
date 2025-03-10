@@ -1,5 +1,4 @@
 import { useLocation } from "react-router-dom";
-import Header from "../components/header";
 import { useEffect, useState } from "react";
 import ProductCard from "../components/product";
 
@@ -33,7 +32,6 @@ const SearchResult = () => {
 
   return (
     <>
-      <Header />
 
       <div className="grid grid-cols-4 gap-4 ml-2 p-5">
         {results.length > 0 ? (

@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 
-const {Schema} = mongoose;
 
-const NewsletterSchema = new Schema({
+const NewsletterSchema = new mongoose.Schema({
     email:{
         type:String,
         required:true,
@@ -10,6 +9,5 @@ const NewsletterSchema = new Schema({
 },{timestamps:true}
 );
 
-const Newsletter = mongoose.model("Newsletter", NewsletterSchema);
 
-export default Newsletter;
+export default NewsletterSchema;

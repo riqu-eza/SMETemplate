@@ -1,12 +1,8 @@
 import mongoose from "mongoose";
 
-// Destructure Schema from mongoose
-const { Schema } = mongoose;
-
-// Define the schema for order items
 
 // Define the main schema for the Order
-const orderSchema = new Schema(
+const OrderSchema = new mongoose.Schema(
   {
     userId: {
       type: Schema.Types.ObjectId, // Reference to the User model
@@ -23,6 +19,5 @@ const orderSchema = new Schema(
 );
 
 // Create and export the Order model
-const Order = mongoose.model("Order", orderSchema);
 
-export default Order;
+export default OrderSchema;

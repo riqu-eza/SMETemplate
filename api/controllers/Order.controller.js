@@ -1,7 +1,7 @@
-import Checkout from "../Models/checkout.model.js";
-import Order from "../Models/Order.model.js";
+// Import sendEmail utility
 import { sendEmail } from "../utils/email.js";
 
+// Create Order
 export const createOrder = async (req, res, next) => {
   console.log(req.body);
 
@@ -17,6 +17,9 @@ export const createOrder = async (req, res, next) => {
     } else if (!mongoose.Types.ObjectId.isValid(req.body.userId)) {
       return res.status(400).json({ message: "Invalid userId format" });
     }
+
+    // Fetch the tenant-specific Order model from req.models
+    const { Order } = req.models;
 
     // Create the order
     const order = await Order.create(req.body);
@@ -34,10 +37,13 @@ export const createOrder = async (req, res, next) => {
   }
 };
 
-
+// Get Order by ID
 export const getorder = async (req, res, next) => {
   try {
     const { orderId } = req.params; // Get the orderId from the request params
+
+    // Fetch the tenant-specific Order model from req.models
+    const { Order } = req.models;
 
     // Fetch the order from the database using the orderId
     const order = await Order.findById(orderId);
@@ -55,6 +61,7 @@ export const getorder = async (req, res, next) => {
   }
 };
 
+// Create Checkout
 export const createCheckout = async (req, res, next) => {
   console.log("checkout", req.body);
 
@@ -66,6 +73,9 @@ export const createCheckout = async (req, res, next) => {
     if (req.body.userId === "null") {
       delete req.body.userId;
     }
+
+    // Fetch the tenant-specific Order and Checkout models from req.models
+    const { Order, Checkout } = req.models;
 
     // Fetch the complete order details
     const completeOrder = await Order.findById(req.body.orderId);
@@ -118,7 +128,6 @@ export const createCheckout = async (req, res, next) => {
                         <td style="padding: 10px; border: 1px solid #ddd;">${item.quantity}</td>
                         <td style="padding: 10px; border: 1px solid #ddd;">${item.selectedVariant}</td>
                         <td style="padding: 10px; border: 1px solid #ddd;">Ksh${item.price * item.quantity}</td>
-                        
                     </tr>
                   `
                   )
@@ -127,7 +136,7 @@ export const createCheckout = async (req, res, next) => {
             <p style="font-size: 16px; margin-bottom: 10px;"><strong>Order ID:</strong> ${completeOrder._id}</p>
             <p style="font-size: 16px; margin-bottom: 10px;"><strong>Total Cost:</strong> Ksh${completeOrder.totalPrice}</p>
             ${
-              req.body.paymentDetail
+              req.body.paymentDetails
                 ? `
                 <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Account:</strong> ${req.body.paymentDetails.payment_account}</p>
                 <p style="font-size: 16px; margin-bottom: 10px;"><strong>Payment Status:</strong> ${req.body.paymentDetails.payment_status_description}</p>
@@ -141,7 +150,7 @@ export const createCheckout = async (req, res, next) => {
             </p>
             <p style="font-size: 16px;">Thank you for your order! If you have any questions, feel free to contact us.</p>
             <p style="font-size: 16px; text-align: center; margin-top: 30px; color: #4A90E2;">
-                Best regards,<br>LSkin Team
+                Best regards,<br>Sme Template Team
             </p>
         </div>
     </div>
@@ -166,9 +175,12 @@ export const createCheckout = async (req, res, next) => {
   }
 };
 
-
+// Get Checkout Orders
 export const checkout = async (req, res, next) => {
   try {
+    // Fetch tenant-specific Checkout model from req.models
+    const { Checkout } = req.models;
+
     const order = await Checkout.find();
     res.status(200).json(order);
   } catch (e) {

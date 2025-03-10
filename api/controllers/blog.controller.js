@@ -1,23 +1,25 @@
-import blog from "../Models/blog.model.js";
+import { getModels } from "../Models/index.js";
 
-export const createblog = async (req, res, next) => {
+export const createBlog = async (req, res, next) => {
   console.log(req.body);
   try {
-    const listing = await blog.create(req.body);
-    console.log("saved", listing);
-    return res.status(200).json(listing);
+    // Get tenant-specific models using the connection attached to req (e.g., req.db)
+    const models = getModels(req.db);
+    const blogEntry = await models.Blog.create(req.body);
+    console.log("saved", blogEntry);
+    return res.status(200).json(blogEntry);
   } catch (e) {
     next(e);
   }
 };
 
-export const getblog = async (req, res, next) => {
+export const getBlog = async (req, res, next) => {
   console.log("we are here");
   try {
-    const listing = await blog.find();
-    res.status(200).json(listing);
-    console.log("rty",listing)
-
+    const models = getModels(req.db);
+    const blogEntries = await models.Blog.find();
+    console.log("fetched", blogEntries);
+    return res.status(200).json(blogEntries);
   } catch (e) {
     next(e);
   }

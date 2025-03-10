@@ -2,9 +2,8 @@
 import mongoose from "mongoose";
 
 // Destructure Schema from mongoose
-const { Schema } = mongoose;
 
-const CheckoutSchema = new Schema(
+const CheckoutSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
@@ -71,6 +70,5 @@ const CheckoutSchema = new Schema(
   }
 );
 
-const Checkout = mongoose.model("checkout", CheckoutSchema);
 
-export default Checkout;
+export default CheckoutSchema;

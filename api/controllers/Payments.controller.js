@@ -1,15 +1,28 @@
 import PesaPalPlugin from "pesapaldan";
 import { getSocket } from "../Sockerserver.js";
 
+// Process payment (multi-tenancy)
 export const processPayment = async (req, res, next) => {
   const { orderId, formData } = req.body;
 
   try {
-    // Initialize the PesaPal plugin
+    // Fetch tenant-specific configuration from req.models or req.user.connection
+    const { PaymentConfig } = req.models; // Assuming you have a model for tenant-specific payment configs
+
+    // Retrieve the consumer keys and IPN URL for the tenant
+    const paymentConfig = await PaymentConfig.findOne({ tenantId: req.user.tenantId });
+    if (!paymentConfig) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment configuration not found for this tenant.",
+      });
+    }
+
+    // Initialize the PesaPal plugin with the tenant-specific keys
     const plugin = new PesaPalPlugin({
-      consumerKey: process.env.CONSUMER_KEY,
-      consumerSecret: process.env.CONSUMER_SECRET,
-      ipnUrl: process.env.IPN_URL,
+      consumerKey: paymentConfig.consumerKey,
+      consumerSecret: paymentConfig.consumerSecret,
+      ipnUrl: paymentConfig.ipnUrl,
     });
 
     await plugin.initialize();
@@ -22,7 +35,7 @@ export const processPayment = async (req, res, next) => {
         currency: "KES",
         amount: formData.totalPrice,
         description: "Order payment",
-        callback_url: process.env.CALLBACK_URL,
+        callback_url: paymentConfig.callbackUrl,
         billing_address: {
           email_address: formData.email,
           phone_number: formData.phoneNumber,
@@ -53,6 +66,7 @@ export const processPayment = async (req, res, next) => {
   }
 };
 
+// Handle IPN callback (multi-tenancy)
 export const callipn = async (req, res) => {
   const { OrderTrackingId, OrderNotificationType, OrderMerchantReference } = req.body;
   console.log("req.body", req.body);
@@ -61,16 +75,25 @@ export const callipn = async (req, res) => {
     const orderTrackingId = OrderTrackingId;
 
     try {
-      // Retrieve Socket.IO instance dynamically
+      // Retrieve the socket instance dynamically for the tenant
       const io = getSocket();
 
       io.emit(`paymentStatus:${orderTrackingId}`, {
         status: "verifying payment",
       });
 
+      // Fetch tenant-specific payment configuration
+      const { PaymentConfig } = req.models; // Assuming you have a PaymentConfig model
+      const paymentConfig = await PaymentConfig.findOne({ tenantId: req.user.tenantId });
+
+      if (!paymentConfig) {
+        return res.status(400).json({ message: "Payment configuration not found for tenant" });
+      }
+
+      // Initialize the PesaPal plugin with the tenant-specific keys
       const plugin = new PesaPalPlugin({
-        consumerKey: process.env.CONSUMER_KEY,
-        consumerSecret: process.env.CONSUMER_SECRET,
+        consumerKey: paymentConfig.consumerKey,
+        consumerSecret: paymentConfig.consumerSecret,
       });
 
       await plugin.initialize();
