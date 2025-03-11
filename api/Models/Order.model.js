@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 
+const { Schema } = mongoose; // explicitly define Schema
 
-// Define the main schema for the Order
-const OrderSchema = new mongoose.Schema(
+const OrderSchema = new Schema(
   {
     userId: {
-      type: Schema.Types.ObjectId, // Reference to the User model
+      type: Schema.Types.ObjectId,
       ref: "User",
       // required: true,
     },
-    items: { type: [], required: true }, // Array of products (order items)
+    items: { type: [], required: true },
     totalPrice: {
       type: Number,
       required: false,
@@ -18,6 +18,4 @@ const OrderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Create and export the Order model
-
-export default OrderSchema;
+export default OrderSchema; // Export schema only
