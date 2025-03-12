@@ -69,7 +69,7 @@ const ProductCard = ({ product, userId }) => {
 
       {/* Product Image */}
       <Link
-        to={`/product/${product._id}/${userId}`}
+        to={`/product/${product._id}/${userId}/${encodeURIComponent(product.name.toLowerCase().replace(/\s+/g, '-'))}`}
         className="relative w-full h-40 overflow-hidden rounded-t-xl"
       >
         <img

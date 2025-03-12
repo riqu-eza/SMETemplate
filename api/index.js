@@ -16,6 +16,9 @@ import cors from "cors";
 import { createServer } from "http";
 import { initSocket } from "./Sockerserver.js";
 import { getModels } from "./Models/index.js";
+import tenantRouter from "./Routes/Tenant.route.js";
+import sitemapRouter from "./Routes/Sitemap.route.js";
+import robotsRouter from "./Routes/Robots.route.js";
 
 dotenv.config();
 
@@ -118,6 +121,9 @@ app.use("/api/newsletter", newsletterRouter);
 app.use("/api/payments", paymentsRouter);
 app.use("/api/blog", blogRouter);
 app.use("/api/ipn", inprouter);
+app.use('/api/tenant', tenantRouter);
+app.use('/', sitemapRouter);
+app.use('/', robotsRouter);
 
 // --- Serve Static Frontend ---
 app.use(express.static(path.join(__dirname, "client/dist")));
