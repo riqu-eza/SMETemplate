@@ -41,12 +41,12 @@ function AppContent() {
         <Helmet>
           <title>
             {tenantData
-              ? tenantData?.seo?.title || "Our Online Shop"
+              ? tenantData?.seo?.title || "Default Title"
               : "Loading..."}
           </title>
           <meta
             name="description"
-            content={tenantData?.seo?.description || "Best Online Shop"}
+            content={tenantData?.seo?.description || "Default description"}
           />
           <meta
             name="keywords"
@@ -54,13 +54,13 @@ function AppContent() {
           />
           <link
             rel="canonical"
-            href={tenantData?.seo?.url || "https://smetemplate.xyz"}
+            href={tenantData?.seo?.url || "https://default.com"}
           />
 
           {/* Open Graph */}
           <meta
             property="og:title"
-            content={tenantData?.seo?.title || "Online Shop"}
+            content={tenantData?.seo?.title || "Default Title"}
           />
           <meta
             property="og:description"
