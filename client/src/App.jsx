@@ -37,21 +37,42 @@ function AppContent() {
   return (
     <HelmetProvider>
       {/* Helmet for dynamic SEO */}
-      <Helmet>
-        <title>{tenantData?.seo?.title || "Loading..."}</title>
-        <meta name="description" content={tenantData?.seo?.description || ""} />
-        <meta name="keywords" content={tenantData?.seo?.keywords || ""} />
-        <link rel="canonical" href={tenantData?.seo?.url || ""} />
+      {tenantData && (
+        <Helmet>
+          <title>
+            {tenantData
+              ? tenantData?.seo?.title || "Our Online Shop"
+              : "Loading..."}
+          </title>
+          <meta
+            name="description"
+            content={tenantData?.seo?.description || "Best Online Shop"}
+          />
+          <meta
+            name="keywords"
+            content={tenantData?.seo?.keywords || "default, keywords"}
+          />
+          <link
+            rel="canonical"
+            href={tenantData?.seo?.url || "https://smetemplate.xyz"}
+          />
 
-        {/* Open Graph */}
-        <meta property="og:title" content={tenantData?.seo?.title || ""} />
-        <meta
-          property="og:description"
-          content={tenantData?.seo?.description || ""}
-        />
-        <meta property="og:url" content={tenantData?.seo?.url || ""} />
-        <meta property="og:type" content="website" />
-      </Helmet>
+          {/* Open Graph */}
+          <meta
+            property="og:title"
+            content={tenantData?.seo?.title || "Online Shop"}
+          />
+          <meta
+            property="og:description"
+            content={tenantData?.seo?.description || "Default description"}
+          />
+          <meta
+            property="og:url"
+            content={tenantData?.seo?.url || "https://default.com"}
+          />
+          <meta property="og:type" content="website" />
+        </Helmet>
+      )}
 
       <CartProvider>
         <BrowserRouter>
@@ -68,7 +89,10 @@ function AppContent() {
                 path="/product/:productId/:userId/:productName"
                 element={<ProductDetail />}
               />
-              <Route path="/add-products/:shopId" element={<AddProductsPage />} />
+              <Route
+                path="/add-products/:shopId"
+                element={<AddProductsPage />}
+              />
               <Route path="/cart/:productId/:userId" element={<Cart />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/buy/:productId/:userId" element={<Checkout />} />

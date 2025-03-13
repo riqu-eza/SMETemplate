@@ -16,6 +16,7 @@ export const TenantProvider = ({ children }) => {
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         setTenantData(data);
+        console.log("Fetched Tenant Data:", data); // Debugging line
       } catch (err) {
         console.error('Error fetching tenant data:', err);
       }
