@@ -188,35 +188,67 @@ export const deleteproduct = async (req, res) => {
 };
 
 export const createItem = async (req, res, next) => {
-  const { type, shopId } = req.params; // 'categories' or 'products'
-  const data = req.body;
+  const { type, shopId } = req.params;
   const { Category, Product } = req.models;
-  
+
+  // data could be a single object or an array
+  const data = req.body;
+
   try {
-    let newItem;
-    if (type === "categories") {
-      newItem = new Category({ ...data, shopId });
-    } else if (type === "products") {
-      if (!data.categoryId) {
-        return res.status(400).json({ message: "categoryId is required for products." });
+    if (type === "products") {
+      // If it's an array, loop or use insertMany
+      if (Array.isArray(data)) {
+        // Validate each item has categoryId
+        for (let item of data) {
+          if (!item.categoryId) {
+            return res
+              .status(400)
+              .json({ message: "categoryId is required for products." });
+          }
+        }
+
+        // Bulk insert
+        const result = await Product.insertMany(
+          data.map((prod) => ({ ...prod, shopId }))
+        );
+
+        // For each product, also update the Category doc
+        for (let product of result) {
+          await Category.findByIdAndUpdate(product.categoryId, {
+            $addToSet: { products: product._id },
+          });
+        }
+
+        return res.status(201).json(result);
+      } else {
+        // Single product
+        if (!data.categoryId) {
+          return res.status(400).json({ message: "categoryId is required for products." });
+        }
+        const newProduct = new Product({ ...data, shopId });
+        const savedProduct = await newProduct.save();
+
+        // Add the product to the category's products array
+        await Category.findByIdAndUpdate(data.categoryId, {
+          $addToSet: { products: savedProduct._id },
+        });
+        return res.status(201).json(savedProduct);
       }
-      newItem = new Product({ ...data, shopId });
-      const savedProduct = await newItem.save();
-      // Add the product to the category's products array
-      await Category.findByIdAndUpdate(data.categoryId, {
-        $addToSet: { products: savedProduct._id },
-      });
-      return res.status(201).json(savedProduct);
-    } else {
-      return res.status(400).json({ message: "Invalid type specified." });
     }
-    const savedItem = await newItem.save();
-    return res.status(201).json(savedItem);
+
+    if (type === "categories") {
+      const newItem = new Category({ ...data, shopId });
+      const savedItem = await newItem.save();
+      return res.status(201).json(savedItem);
+    }
+
+    return res.status(400).json({ message: "Invalid type specified." });
   } catch (error) {
     console.error("Error creating item:", error.message);
     next(error);
   }
 };
+
 
 export const updateItem = async (req, res, next) => {
   const { type, id, shopId } = req.params; // 'categories' or 'products'
