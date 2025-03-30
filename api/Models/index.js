@@ -7,6 +7,7 @@ import ListingSchema from "./Listing.model.js";
 import NewsletterSchema from "./newsletter.model.js";
 import OrderSchema from "./Order.model.js";
 import ProductSchema from "./product.model.js";
+import TenantSchema from "./Seodata.model.js";
 import ShopSchema from "./Shop.model.js";
 import UserSchema from "./user.model.js";
 
@@ -26,5 +27,6 @@ export const getModels = (connection) => {
     Order: connection.models.Order || connection.model("Order", OrderSchema),
     Newsletter: connection.models.Newsletter || connection.model("Newsletter", NewsletterSchema),
     User: connection.models.User || connection.model("User", UserSchema),
+    Tenant:connection.models.Tenant || connection.model("Tenant", TenantSchema),
   };
 };

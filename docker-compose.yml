@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   api:
     build:
@@ -7,10 +6,10 @@ services:
     container_name: sme_api
     ports:
       - "3011:3011"
+    volumes:
+      - ./tenant_configs.json:/app/tenant_configs.json:ro
     environment:
       - NODE_ENV=production
-    env_file:
-      - tenant_configs.env
 
   client:
     build: ./client

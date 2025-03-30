@@ -1,0 +1,45 @@
+{
+    "smetemplate.xyz": {
+      "MONGO": "mongodb+srv://Classicwood:6YVPZI9zyv3QHIiH@cluster0.jd3knvj.mongodb.net/portal?retryWrites=true&w=majority&appName=Cluster0",
+      "JWT_SECRET": "sup3rS3cretKey@123$%long_random_value",
+      "CONSUMER_KEY": "aTFKs75esrcNEP/bMMqm9inVOvXh3JFi",
+      "CONSUMER_SECRET": "Uo5P3fykj/tYZZVY3B08FqNvo+E=",
+      "CALLBACK_URL": "https://domain1.com/api/ipn/callbackurl",
+      "IPN_URL": "https://domain1.com/api/payments/ipn",
+      "SEO": {
+        "title": "SME Template Shop",
+        "description": "The best SME marketplace online.",
+        "keywords": "sme, marketplace, online shopping",
+        "url": "https://smetemplate.xyz"
+      },
+      "WHATSAPP": {
+        "phoneNumber": "+254797037687",
+        "accountName": "SME Template",
+        "chatMessage": "Hello! Welcome to SME Template. How can we help you today?",
+        "avatar": "https://link-to-your-avatar.jpg",
+        "statusMessage": "We are online!"
+      }
+    },
+    "classicwoodfurniture.co.ke": {
+      "MONGO": "mongodb+srv://Classicwood:6YVPZI9zyv3QHIiH@cluster0.jd3knvj.mongodb.net/portal?retryWrites=true&w=majority&appName=Cluster0",
+      "JWT_SECRET": "anotherSecretForDomain2",
+      "CONSUMER_KEY": "anotherKeyForDomain2",
+      "CONSUMER_SECRET": "anotherSecret2",
+      "CALLBACK_URL": "https://domain2.com/api/ipn/callbackurl",
+      "IPN_URL": "https://domain2.com/api/payments/ipn",
+      "SEO": {
+        "title": "L Skin Essentials",
+        "description": "Natural skincare products for healthy skin.",
+        "keywords": "skincare, natural, beauty products",
+        "url": "https://lskinessentials.com"
+      },
+      "WHATSAPP": {
+        "phoneNumber": "+254712345678",
+        "accountName": "L Skin Essentials",
+        "chatMessage": "Hello! Need assistance?",
+        "avatar": "https://link-to-avatar.jpg",
+        "statusMessage": "Typically replies within minutes"
+      }
+    }
+  }
+  
